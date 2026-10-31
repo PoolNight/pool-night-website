@@ -113,6 +113,88 @@
      "w": 0
     }
    ]
+  },
+  {
+   "id": "Tournois Halloween|2026-10-31",
+   "name": "Tournois Halloween",
+   "date": "2026-10-31",
+   "matches": [
+    {
+     "a": "PoolNight ",
+     "b": "Virgile HOQUET-GALLET",
+     "w": 0
+    },
+    {
+     "a": "Marius CHARPENTIER",
+     "b": "Yatharth GARG",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Raphael OBLED",
+     "w": 0
+    },
+    {
+     "a": "Nicolas LEFEVRE-PONTALIS",
+     "b": "Paul GUIHENEC",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Yanis MASSOT",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Emir DUMAN",
+     "w": 0
+    },
+    {
+     "a": "LES FRANTZ ",
+     "b": "Ugo PARODAT",
+     "w": 0
+    },
+    {
+     "a": "Mathurin PROY",
+     "b": "Adam ABDELMOTALIB",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Marius CHARPENTIER",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Nicolas LEFEVRE-PONTALIS",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Matteo DUPOND",
+     "w": 0
+    },
+    {
+     "a": "LES FRANTZ ",
+     "b": "Mathurin PROY",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Mathias CADIOU",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "LES FRANTZ ",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Lucien TEILLET",
+     "w": 0
+    }
+   ]
   }
  ]
 }
