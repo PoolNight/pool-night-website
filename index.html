@@ -263,7 +263,7 @@ function podium(b){
 function extractTournoi(t){
  if(!t||!Array.isArray(t.players)||!Array.isArray(t.brackets)||!t.brackets.length||t.brackets.some(b=>!b.secs))throw new Error('Format non reconnu : exporte tournoi.json depuis la dernière version de la page tournois, avec un tableau généré.');
  const P={},L=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
- const nm=id=>`${P[id].p} ${P[id].n}`;
+ const nm=id=>`${P[id].p} ${P[id].n}`.trim();
  t.brackets.forEach((b,bi)=>{
   const add=(m,key)=>{if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.a]&&P[m.b]&&m.a!==m.b)L.push({a:nm(m.a),b:nm(m.b),w:m.w===m.a?0:1,t:m.t,key,bi,seq:seq++})};
   (b.groups||[]).forEach(g=>g.ms.forEach(m=>add(m,0)));
