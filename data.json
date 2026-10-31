@@ -26,5 +26,93 @@
    "img": "assets/event_3.png"
   }
  ],
- "results": []
+ "results": [
+  {
+   "id": "Tournois #1|2026-10-14",
+   "name": "Tournois #1",
+   "date": "2026-10-14",
+   "matches": [
+    {
+     "a": "Matteo DUPOND",
+     "b": "Léos VOISIN",
+     "w": 0
+    },
+    {
+     "a": "Mathurin PROY",
+     "b": "Nathan BABEC",
+     "w": 0
+    },
+    {
+     "a": "Reda TAHIRI",
+     "b": "Raphael OBLED",
+     "w": 0
+    },
+    {
+     "a": "Ugo PARODAT",
+     "b": "Arthur CARRE",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Mohammed KAYSAN-RAYS",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Raphael NOEL-JEAN",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Adam ABDELMOTALIB",
+     "w": 0
+    },
+    {
+     "a": "Antoine BAUD",
+     "b": "Henrique AFONSO GOMES",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Mathurin PROY",
+     "w": 0
+    },
+    {
+     "a": "Reda TAHIRI",
+     "b": "Ugo PARODAT",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Mathias CADIOU",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Antoine BAUD",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Reda TAHIRI",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Virgile HOQUET-GALLET",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Reda TAHIRI",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Lucien TEILLET",
+     "w": 0
+    }
+   ]
+  }
+ ]
 }
