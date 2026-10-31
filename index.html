@@ -330,7 +330,10 @@ function gen(){
 }
 function pick(k,id){
  const r=REG[k];if(!r||!pl(r.m.a)||!pl(r.m.b))return;
- r.m.w=r.m.w===id?null:id;prop(r.b);save();renderB();
+ const had=r.m.w;r.m.w=had===id?null:id;
+ /* horodatage de la saisie : sert à rejouer les matchs dans l'ordre pour le classement ELO */
+ if(r.m.w===null)delete r.m.t;else if(had===null||typeof r.m.t!=='number')r.m.t=Date.now();
+ prop(r.b);save();renderB();
 }
 function mHtml(m,b,me,edit){
  const k=REG.push({m,b})-1,ok=pl(m.a)&&pl(m.b),path=me&&(m.a===me||m.b===me),now=path&&m.w===null&&ok;
