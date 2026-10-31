@@ -90,6 +90,7 @@ footer a{color:var(--bg)}
 .lb td{padding:.55rem .6rem;border-bottom:1px dashed var(--line)}
 .lb td:first-child{font:400 1.3rem Anton,sans-serif;color:var(--red);width:3rem}
 .lb .pts{font:400 1.2rem Anton,sans-serif;text-align:right}
+.lb th.pts{font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-align:right}
 .lb tr.top1 td{background:#f1d9a6}.lb tr.top2 td{background:#f6e7c7}.lb tr.top3 td{background:#f8efdc}
 .st{font-size:.9rem;opacity:.85}
 .oh{font:400 1.3rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:0 0 .6rem;color:var(--red)}
@@ -169,7 +170,6 @@ label.btn{display:inline-block}
 
 <section id="p-classement" hidden>
 <div class="rw"><h2 class="rib">Classement</h2></div>
-<div class="row"><label for="lvf">Niveau :</label><select id="lvf" onchange="renderBoard()"></select></div>
 <div class="lbw" id="lb"></div>
 <p class="st" id="lbn"></p>
 </section>
@@ -217,7 +217,7 @@ const DEFAULT_EVENTS=[ /* date au format AAAA-MM-JJ. Une fois l'espace organisat
 /* Espace organisateur : empreinte SHA-256 du mot de passe (mot de passe provisoire : billard2026).
    Génère la tienne depuis l'espace organisateur, section « Mot de passe ». */
 const ORGA_HASH='b6ce38453fed226d97fc71a95036c434f6d69015ce7198a1747ad048503558c3';
-const POINTS={part:1,win:2,champ:5,final:3}; /* barème du classement */
+const ELO_START=1000,ELO_K=32; /* paramètres du classement ELO (voir Systeme_ELO_Billard_Global.xlsx) */
 const DATA_PATH='data.json';
 /* ====================== */
 const $=id=>document.getElementById(id);
@@ -251,39 +251,49 @@ function renderEvents(){
  if(up.length){n.hidden=false;n.innerHTML=`Prochain rendez-vous : <b>${esc(up[0].t)}</b>, le ${day(up[0].d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}.`}else n.hidden=true;
 }
 
-/* ---------- classement ---------- */
+/* ---------- classement ELO ---------- */
 const real=i=>i&&i!=='-';
+const pkey=n=>norm(n).split(/\s+/).sort().join(' ');
 function podium(b){
  if(b.type==='de'){const [gf,rs]=b.secs[2].rounds.map(r=>r[0]);if(!real(gf.w))return[null,null];const m=gf.w===gf.a?gf:rs;return real(m.w)?[m.w,m.w===m.a?m.b:m.a]:[null,null]}
  const R=b.secs[0].rounds,f=R[R.length-1][0];return real(f.w)?[f.w,f.w===f.a?f.b:f.a]:[null,null];
 }
-function scoreTournoi(t){
+/* Liste ordonnée des matchs réellement joués d'un tournoi (les byes ne comptent pas).
+   Ordre : horodatage de saisie (m.t) s'il existe partout, sinon ordre logique des tours. */
+function extractTournoi(t){
  if(!t||!Array.isArray(t.players)||!Array.isArray(t.brackets)||!t.brackets.length||t.brackets.some(b=>!b.secs))throw new Error('Format non reconnu : exporte tournoi.json depuis la dernière version de la page tournois, avec un tableau généré.');
- const P={},R={};let open=0;t.players.forEach(p=>P[p.id]=p);
- const get=id=>R[id]||(R[id]={p:P[id].p,n:P[id].n,l:P[id].l,v:0,c:0,f:0});
- t.brackets.forEach(b=>{
-  const ms=[];(b.groups||[]).forEach(g=>g.ms.forEach(m=>ms.push(m)));b.secs.forEach(s=>s.rounds.forEach(r=>r.forEach(m=>ms.push(m))));
-  ms.forEach(m=>{[m.a,m.b].forEach(i=>{if(real(i)&&P[i])get(i)});if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.w])get(m.w).v++});
-  const [c,f]=podium(b);if(c&&P[c]){get(c).c++;if(f&&P[f])get(f).f++}else open++;
+ const P={},L=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
+ const nm=id=>`${P[id].p} ${P[id].n}`;
+ t.brackets.forEach((b,bi)=>{
+  const add=(m,key)=>{if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.a]&&P[m.b]&&m.a!==m.b)L.push({a:nm(m.a),b:nm(m.b),w:m.w===m.a?0:1,t:m.t,key,bi,seq:seq++})};
+  (b.groups||[]).forEach(g=>g.ms.forEach(m=>add(m,0)));
+  b.secs.forEach((s,si)=>s.rounds.forEach((R,r)=>R.forEach(m=>add(m,b.type==='po'?1+r:b.type==='de'?(si===0?2*r:si===1?r+1.5:1000+r):r))));
+  if(!podium(b)[0])open++;
  });
- return {rows:Object.values(R),open};
+ const ts=L.length>0&&L.every(x=>typeof x.t==='number');
+ L.sort(ts?(x,y)=>x.t-y.t||x.seq-y.seq:(x,y)=>x.key-y.key||x.bi-y.bi||x.seq-y.seq);
+ return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open};
 }
-function board(lv){
- const M={};
- [...D.results].sort((a,b)=>a.date<b.date?-1:1).forEach(t=>t.rows.forEach(r=>{
-  const k=norm(r.p+' '+r.n).split(/\s+/).sort().join(' '),x=M[k]||(M[k]={p:r.p,n:r.n,l:r.l,t:0,v:0,c:0,f:0});
-  x.l=r.l||x.l;x.t++;x.v+=r.v;x.c+=r.c;x.f+=r.f}));
- return Object.values(M).map(x=>({...x,pts:x.t*POINTS.part+x.v*POINTS.win+x.c*POINTS.champ+x.f*POINTS.final})).filter(x=>!lv||x.l===lv)
-  .sort((a,b)=>b.pts-a.pts||b.c-a.c||b.v-a.v||(a.n+a.p).localeCompare(b.n+b.p));
+/* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
+function board(){
+ const P={};
+ const get=nm=>P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0});
+ D.results.map((t,i)=>({t,i})).filter(x=>Array.isArray(x.t.matches))
+  .sort((x,y)=>x.t.date<y.t.date?-1:x.t.date>y.t.date?1:x.i-y.i)
+  .forEach(({t})=>t.matches.forEach(m=>{
+   const A=get(m.a),B=get(m.b);if(A===B)return;
+   const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
+   A.elo+=d;B.elo-=d;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
+  }));
+ return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
 }
 function renderBoard(){
- const sel=$('lvf'),cur=sel.value,lvs=[...new Set(D.results.flatMap(t=>t.rows.map(r=>r.l)).filter(Boolean))];
- sel.innerHTML='<option value="">Tous les niveaux</option>'+lvs.map(l=>`<option${l===cur?' selected':''}>${esc(l)}</option>`).join('');
- const rows=board(sel.value);let rk=0;
- $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th>Niveau</th><th>Tournois</th><th>Victoires</th><th>Titres</th><th class="pts">Points</th></tr>${rows.map((x,i)=>{if(!i||x.pts!==rows[i-1].pts)rk=i+1;
-  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk}</td><td>${esc(x.p)} ${esc(x.n)}</td><td>${esc(x.l||'')}</td><td>${x.t}</td><td>${x.v}</td><td>${x.c}</td><td class="pts">${x.pts}</td></tr>`}).join('')}</table>`
-  :'<div class="empty">Le classement apparaîtra après le premier tournoi terminé.</div>';
- $('lbn').textContent=`Barème : ${POINTS.part} pt par tournoi joué, ${POINTS.win} par victoire, +${POINTS.champ} pour un titre, +${POINTS.final} pour une finale perdue.`;
+ const rows=board();
+ $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th class="pts">ELO</th><th>Matchs</th><th>Victoires</th><th>Défaites</th><th>Win rate</th><th>Variation</th></tr>${rows.map(x=>{
+  const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
+  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
+  :'<div class="empty">Le classement apparaîtra après le premier tournoi importé.</div>';
+ $('lbn').textContent=`Classement ELO global : chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), sans bonus de finale ni de titre : battre un joueur mieux classé rapporte plus de points.`;
 }
 
 /* ---------- espace organisateur ---------- */
@@ -340,16 +350,20 @@ function exportData(){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,1)],{type:'application/json'}));a.download='data.json';a.click();
 }
 function addResult(t){
- let r;try{r=scoreTournoi(t)}catch(e){return alert(e.message)}
+ let r;try{r=extractTournoi(t)}catch(e){return alert(e.message)}
+ if(!r.matches.length)return alert('Aucun match joué dans ce tournoi.');
  if(r.open&&!confirm(r.open+' tableau(x) sans vainqueur (tournoi non terminé ?). Importer quand même ?'))return;
  const name=$('rn').value.trim()||'Tournoi',date=$('rd').value||iso(new Date()),id=name+'|'+date;
- D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,rows:r.rows});
+ D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,matches:r.matches});
  touch();renderBoard();renderOrga();
 }
 function importFile(i){const f=i.files[0];if(f)f.text().then(x=>addResult(JSON.parse(x))).catch(()=>alert('Fichier illisible.'))}
 async function importRemote(){
- try{addResult(await (await fetch(new URL('tournoi.json',TOURNOI_URL.replace(/\/?$/,'/')))).json())}
- catch(e){alert('Lecture impossible depuis le site des tournois (blocage du navigateur). Exporte tournoi.json depuis la page tournois et charge-le avec « Importer un fichier ».')}
+ const base=TOURNOI_URL.replace(/\/?$/,'/');
+ for(const p of ['api/tournoi','tournoi.json']){
+  try{const r=await fetch(new URL(p,base),{cache:'no-store'});if(r.ok){addResult(await r.json());return}}catch(e){}
+ }
+ alert('Lecture impossible depuis le site des tournois (blocage du navigateur). Exporte tournoi.json depuis la page tournois et charge-le avec « Importer un fichier ».');
 }
 function resDel(i){if(confirm('Retirer ce tournoi du classement ?')){D.results.splice(i,1);touch();renderBoard();renderOrga()}}
 async function makeHash(){try{$('hout').textContent=await sha($('npw').value)}catch(e){$('hout').textContent='Indisponible hors https.'}}
@@ -359,10 +373,10 @@ function renderOrga(){
 <div class="row"><input value="${esc(e.img||'')}" placeholder="assets/affiche.jpg" oninput="evSet('${e.id}','img',this.value)" aria-label="Chemin de l’affiche"><label class="btn alt sm">Téléverser une affiche<input type="file" accept="image/*" hidden onchange="upImg('${e.id}',this)"></label></div>
 <div class="row"><span class="tag ${p?'p':'u'}">${p?'Passé':'À venir'}</span><button class="btn alt sm" onclick="evMove('${e.id}')">${p?'Remettre à venir':'Passer en évènement passé'}</button><button class="btn sm" onclick="evDel('${e.id}')">Supprimer</button></div></div>`};
  $('orga').innerHTML=`<div class="frame"><h3 class="oh">Évènements</h3><button class="btn" onclick="evAdd()">Ajouter un évènement</button>${[...D.events].sort((a,b)=>day(b.d)-day(a.d)).map(e2).join('')}</div>
-<div class="frame"><h3 class="oh">Classement</h3><p class="st">Après chaque tournoi, exporte tournoi.json depuis la page tournois, puis importe-le ici pour mettre à jour le classement.</p>
+<div class="frame"><h3 class="oh">Classement</h3><p class="st">Après chaque tournoi, exporte tournoi.json depuis la page tournois, puis importe-le ici. Chaque match joué met à jour l’ELO des deux joueurs (les byes ne comptent pas). L’ordre des matchs est celui de la saisie des résultats, ou à défaut l’ordre logique des tours. Pour corriger un résultat, corrige-le dans la page tournois puis réimporte le fichier avec le même nom et la même date.</p>
 <div class="row"><input id="rn" placeholder="Nom du tournoi" aria-label="Nom du tournoi"><input id="rd" type="date" value="${iso(new Date())}" aria-label="Date du tournoi"></div>
 <div class="row"><label class="btn alt sm">Importer un fichier<input type="file" accept=".json" hidden onchange="importFile(this)"></label><button class="btn alt sm" onclick="importRemote()">Importer depuis le site tournois</button></div>
-${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).toLocaleDateString('fr-FR')} · ${t.rows.length} joueurs</span><button class="btn sm" onclick="resDel(${i})">Retirer</button></div>`).join('')||'<p class="st">Aucun tournoi importé.</p>'}</div>
+${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).toLocaleDateString('fr-FR')} · ${t.matches?t.matches.length+' matchs':'ancien format, non compté'}</span><button class="btn sm" onclick="resDel(${i})">Retirer</button></div>`).join('')||'<p class="st">Aucun tournoi importé.</p>'}</div>
 <div class="frame"><h3 class="oh">Publication</h3><p class="st">Les changements ne sont visibles du public qu’une fois publiés sur GitHub. Le jeton reste dans ce navigateur (Contents : Read and write, dépôt du site uniquement).</p>
 <div class="row"><input id="go" placeholder="Utilisateur GitHub" value="${esc(GH.owner)}" aria-label="Utilisateur GitHub"><input id="gr" placeholder="Dépôt" value="${esc(GH.repo)}" aria-label="Dépôt"><input id="gb" placeholder="Branche" value="${esc(GH.branch)}" aria-label="Branche"></div>
 <div class="row"><input id="gt" type="password" placeholder="Jeton d’accès" value="${esc(GH.token)}" aria-label="Jeton d’accès"><label><input type="checkbox" id="ga"${GH.auto?' checked':''}> Publier automatiquement</label></div>
