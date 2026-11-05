@@ -243,7 +243,7 @@ try{Object.assign(GH,JSON.parse(localStorage.getItem('pn_gh')))}catch(e){}
 const isPast=e=>e.p==='past'||(e.p!=='up'&&day(e.d)<t0);
 function noimg(el){el.outerHTML='<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}
 const card=(e,past)=>{const d=day(e.d);
- return `<article class="ev${past?' past':''}">${e.img?`<img src="${esc(e.img)}" alt="Affiche : ${esc(e.t)}" loading="lazy" onerror="noimg(this)">`:'<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}<div class="evb"><div class="date"><b>${d.getDate()}</b>${d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')}</div><h3>${esc(e.t)}</h3>${e.l?`<p class="lieu">${esc(e.l)}</p>`:''}<p>${esc(e.x)}</p></div></article>`};
+ return `<article class="ev${past?' past':''}"${past?'':` onclick="window.open(LINKTREE||INSTA,'_blank','noopener')" onkeydown="if(event.key==='Enter')this.click()" tabindex="0" role="link" style="cursor:pointer"`}>${e.img?`<img src="${esc(e.img)}" alt="Affiche : ${esc(e.t)}" loading="lazy" onerror="noimg(this)">`:'<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}<div class="evb"><div class="date"><b>${d.getDate()}</b>${d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')}</div><h3>${esc(e.t)}</h3>${e.l?`<p class="lieu">${esc(e.l)}</p>`:''}<p>${esc(e.x)}</p></div></article>`};
 function renderEvents(){
  const up=D.events.filter(e=>!isPast(e)).sort((a,b)=>day(a.d)-day(b.d)),past=D.events.filter(isPast).sort((a,b)=>day(b.d)-day(a.d));
  $('up').innerHTML=up.length?up.map(e=>card(e,false)).join(''):'<div class="empty">Pas d’évènement annoncé pour le moment. Suis-nous sur Instagram pour les prochaines dates !</div>';
