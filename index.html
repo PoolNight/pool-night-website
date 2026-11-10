@@ -218,7 +218,7 @@ const DEFAULT_EVENTS=[ /* date au format AAAA-MM-JJ. Une fois l'espace organisat
 /* Espace organisateur : empreinte SHA-256 du mot de passe (mot de passe provisoire : billard2026).
    Génère la tienne depuis l'espace organisateur, section « Mot de passe ». */
 const ORGA_HASH='b6ce38453fed226d97fc71a95036c434f6d69015ce7198a1747ad048503558c3';
-const ELO_START=1000,ELO_K=32; /* paramètres du classement ELO (voir Systeme_ELO_Billard_Global.xlsx) */
+const ELO_START=1000,ELO_K=32,BONUS_WIN=5,BONUS_TITLE=25; /* paramètres du classement ELO (voir Systeme_ELO_Billard_Global.xlsx) */
 const DATA_PATH='data.json';
 /* ====================== */
 const $=id=>document.getElementById(id);
@@ -263,17 +263,17 @@ function podium(b){
    Ordre : horodatage de saisie (m.t) s'il existe partout, sinon ordre logique des tours. */
 function extractTournoi(t){
  if(!t||!Array.isArray(t.players)||!Array.isArray(t.brackets)||!t.brackets.length||t.brackets.some(b=>!b.secs))throw new Error('Format non reconnu : exporte tournoi.json depuis la dernière version de la page tournois, avec un tableau généré.');
- const P={},L=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
+ const P={},L=[],champs=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
  const nm=id=>`${P[id].p} ${P[id].n}`.trim();
  t.brackets.forEach((b,bi)=>{
   const add=(m,key)=>{if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.a]&&P[m.b]&&m.a!==m.b)L.push({a:nm(m.a),b:nm(m.b),w:m.w===m.a?0:1,t:m.t,key,bi,seq:seq++})};
   (b.groups||[]).forEach(g=>g.ms.forEach(m=>add(m,0)));
   b.secs.forEach((s,si)=>s.rounds.forEach((R,r)=>R.forEach(m=>add(m,b.type==='po'?1+r:b.type==='de'?(si===0?2*r:si===1?r+1.5:1000+r):r))));
-  if(!podium(b)[0])open++;
+  const ch=podium(b)[0];if(ch&&P[ch])champs.push(nm(ch));else open++;
  });
  const ts=L.length>0&&L.every(x=>typeof x.t==='number');
  L.sort(ts?(x,y)=>x.t-y.t||x.seq-y.seq:(x,y)=>x.key-y.key||x.bi-y.bi||x.seq-y.seq);
- return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open};
+ return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open,champs};
 }
 /* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
 function board(){
@@ -281,11 +281,11 @@ function board(){
  const get=nm=>P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0});
  D.results.map((t,i)=>({t,i})).filter(x=>Array.isArray(x.t.matches))
   .sort((x,y)=>x.t.date<y.t.date?-1:x.t.date>y.t.date?1:x.i-y.i)
-  .forEach(({t})=>t.matches.forEach(m=>{
+  .forEach(({t})=>{t.matches.forEach(m=>{
    const A=get(m.a),B=get(m.b);if(A===B)return;
    const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
-   A.elo+=d;B.elo-=d;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
-  }));
+   A.elo+=d;B.elo-=d;(sa?A:B).elo+=BONUS_WIN;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
+  });(t.champs||[]).forEach(n=>{get(n).elo+=BONUS_TITLE})});
  return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
 }
 function renderBoard(){
@@ -294,7 +294,7 @@ function renderBoard(){
   const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
   return `<tr class="${rk<4?'top'+rk:''}"><td>${rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
   :'<div class="empty">Le classement apparaîtra après le premier tournoi importé.</div>';
- $('lbn').textContent=`Classement ELO global : chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), sans bonus de finale ni de titre : battre un joueur mieux classé rapporte plus de points.`;
+ $('lbn').textContent=`Classement ELO global : chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire et ${BONUS_TITLE} points pour chaque titre de tournoi.`;
 }
 
 /* ---------- espace organisateur ---------- */
@@ -355,7 +355,7 @@ function addResult(t){
  if(!r.matches.length)return alert('Aucun match joué dans ce tournoi.');
  if(r.open&&!confirm(r.open+' tableau(x) sans vainqueur (tournoi non terminé ?). Importer quand même ?'))return;
  const name=$('rn').value.trim()||'Tournoi',date=$('rd').value||iso(new Date()),id=name+'|'+date;
- D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,matches:r.matches});
+ D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,matches:r.matches,champs:r.champs});
  touch();renderBoard();renderOrga();
 }
 function importFile(i){const f=i.files[0];if(f)f.text().then(x=>addResult(JSON.parse(x))).catch(()=>alert('Fichier illisible.'))}
