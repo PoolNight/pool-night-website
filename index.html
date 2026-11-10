@@ -30,7 +30,14 @@ h1 span{color:var(--ink);text-shadow:3px 3px 0 var(--red)}
 nav{position:sticky;top:0;z-index:20;background:var(--ink);display:flex;justify-content:center;flex-wrap:wrap;border-bottom:3px solid var(--red)}
 nav a{color:var(--bg);text-decoration:none;font:400 1rem Anton,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:.8rem 1.1rem;border-bottom:4px solid transparent;margin-bottom:-3px}
 nav a:hover{background:#ffffff14}
-nav a[aria-current]{border-bottom-color:var(--bg);color:#fff}
+nav a[aria-current]{color:#fff}
+/* queue de billard : remplace le soulignement de l'onglet actif */
+#cue,#ball{position:absolute;z-index:2;pointer-events:none;transition:opacity .2s;left:0;top:0}
+#cue{height:8px;clip-path:polygon(0 0,100% 32%,100% 68%,0 100%);background:linear-gradient(90deg,#5a3a1c 0 10%,#c0281f 10% 14%,#5a3a1c 14% 18%,#e9cf9c 18% 93%,#4f9ac4 93%)}
+#ball{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 35%,#e4dccb 75%,#b9ae96);box-shadow:0 1px 2px #0007}
+#ball i{position:absolute;inset:0;border-radius:50%}
+#ball i::after{content:"";position:absolute;left:2px;top:3px;width:3.5px;height:3.5px;border-radius:50%;background:var(--red)}
+#cue.off,#ball.off{opacity:0}
 nav a.ext::after{content:" \2197"}
 main{max-width:1000px;margin:auto;padding:2rem 1rem 3rem}
 .rw{text-align:center;margin:2.2rem 0 1.4rem}
@@ -120,6 +127,7 @@ label.btn{display:inline-block}
 <a id="t-tournois" class="ext" href="https://pool-night.netlify.app">Tournois</a>
 <a id="t-evenements" href="#evenements">Évènements</a>
 <a id="t-classement" href="#classement">Classement</a>
+<div id="cue" class="off" aria-hidden="true"></div><div id="ball" class="off" aria-hidden="true"><i></i></div>
 </nav>
 
 <main>
@@ -388,10 +396,49 @@ ${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).t
 <div class="row"><button class="btn sm" onclick="logout()">Se déconnecter</button></div></div>`;
 }
 
+/* queue de billard sous l'onglet actif : au changement d'onglet, elle pousse la boule jusqu'au nouvel onglet */
+const cueEl=$('cue'),ballEl=$('ball'),ballIn=ballEl.firstElementChild,CD=12,CH=8;
+let cueTab=null,cueF=1,cueRun=0,cueAnims=[];
+const calm=matchMedia('(prefers-reduced-motion:reduce)'),sleep=ms=>new Promise(f=>setTimeout(f,ms));
+function cueRest(a,f){const L=a.offsetLeft,W=a.offsetWidth,sw=Math.max(20,W-12-CD),y=a.offsetTop+a.offsetHeight-4;
+ return f>0?{sl:L+6,sw,bl:L+6+sw,y}:{bl:L+6,sl:L+6+CD,sw,y}}
+function cueApply(r,f){cueEl.style.cssText=`left:${r.sl}px;top:${r.y}px;width:${r.sw}px;transform:scaleX(${f})`;ballEl.style.cssText=`left:${r.bl}px;top:${r.y-(CD-CH)/2}px`;ballIn.style.transform=''}
+function cueAnim(el,kf,ms,ease,delay){const an=el.animate(kf,{duration:ms,easing:ease,delay:delay||0,fill:'forwards'});cueAnims.push(an);return an.finished}
+async function moveCue(a){
+ const my=++cueRun;
+ cueAnims.forEach(x=>x.cancel());cueAnims=[];
+ if(!a){cueEl.classList.add('off');ballEl.classList.add('off');cueTab=null;return}
+ const prev=cueTab,off=cueEl.classList.contains('off');
+ if(prev&&!off)cueApply(cueRest(prev,cueF),cueF);   /* si une animation était en cours : on la termine d'un coup */
+ const dir=prev?(Math.sign(a.offsetLeft-prev.offsetLeft)||1):1;
+ if(!prev||off||a===prev||calm.matches){cueTab=a;cueApply(cueRest(a,cueF),cueF);cueEl.classList.remove('off');ballEl.classList.remove('off');return}
+ const live=()=>my===cueRun;
+ let f=cueF,r0=cueRest(prev,f);
+ cueTab=a;
+ try{
+  if(f!==dir){   /* la queue se retourne côté sens de marche */
+   cueEl.classList.add('off');ballEl.classList.add('off');await sleep(210);if(!live())return;
+   f=dir;r0=cueRest(prev,f);cueApply(r0,f);cueEl.classList.remove('off');ballEl.classList.remove('off');await sleep(210);if(!live())return}
+  cueF=f;
+  const to=cueRest(a,f),S=(o,dx)=>({left:(o.sl+(dx||0))+'px',width:o.sw+'px',top:o.y+'px'});
+  await cueAnim(cueEl,[S(r0),S(r0,-12*f)],190,'ease-out');if(!live())return;      /* la queue recule */
+  await cueAnim(cueEl,[S(r0,-12*f),S(r0)],90,'ease-in');if(!live())return;       /* coup */
+  const dist=to.bl-r0.bl,deg=dist/(Math.PI*CD)*360;
+  await Promise.all([
+   cueAnim(ballEl,[{left:r0.bl+'px',top:(r0.y-2)+'px'},{left:to.bl+'px',top:(to.y-2)+'px'}],640,'cubic-bezier(.1,.8,.2,1)'),
+   cueAnim(ballIn,[{transform:'rotate(0deg)'},{transform:`rotate(${deg}deg)`}],640,'cubic-bezier(.1,.8,.2,1)'),
+   cueAnim(cueEl,[S(r0),S(to)],820,'cubic-bezier(.25,.6,.3,1)')]);
+  if(!live())return;
+  cueApply(to,f);cueAnims.forEach(x=>x.cancel());cueAnims=[];
+ }catch(e){}
+}
+addEventListener('resize',()=>{if(cueTab)moveCue(cueTab)});
+if(document.fonts)document.fonts.ready.then(()=>{if(cueTab)moveCue(cueTab)});
 const TABS=['presentation','bureau','evenements','classement','organisateur'];
 function show(){
  const h=location.hash.slice(1),t=TABS.includes(h)?h:'presentation';
  TABS.forEach(n=>{$('p-'+n).hidden=n!==t;const a=$('t-'+n);if(a)n===t?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+ moveCue($('t-'+t));
  if(t==='organisateur'){const ok=ss('pn_orga')==='1';$('login').hidden=ok;$('orga').hidden=!ok;if(ok)renderOrga()}
 }
 addEventListener('hashchange',show);
