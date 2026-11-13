@@ -107,9 +107,16 @@ footer a{color:var(--bg)}
 .lb{width:100%;border-collapse:collapse;background:var(--card);box-shadow:0 6px 18px #5a3d1a40}
 .lb th{background:var(--ink);color:var(--bg);font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.55rem .6rem;text-align:left}
 .lb td{padding:.55rem .6rem;border-bottom:1px dashed var(--line)}
-.lb td:first-child{font:400 1.3rem Anton,sans-serif;color:var(--red);width:3rem}
+.lb td:first-child{font:400 1.3rem Anton,sans-serif;color:var(--red);width:3.4rem}
 .lb .pts{font:400 1.2rem Anton,sans-serif;text-align:right}
 .lb th.pts{font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-align:right}
+/* boules de billard : rangs 1 à 15 */
+.bl{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--c);box-shadow:inset -3px -4px 6px #0006,inset 3px 3px 5px #fff6,0 2px 3px #0006;vertical-align:middle}
+.bl.s{background:linear-gradient(180deg,#faf6ec 0 24%,var(--c) 24% 76%,#faf6ec 76%)}
+.bl b{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#faf6ec;color:#111;font:400 .7rem/1 Anton,sans-serif;letter-spacing:0;box-shadow:inset 0 -1px 2px #0003}
+.lbt{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem}
+.lbt button{font:400 .95rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.45rem 1rem;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer}
+.lbt button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
 .lb tr.top1 td{background:#f1d9a6}.lb tr.top2 td{background:#f6e7c7}.lb tr.top3 td{background:#f8efdc}
 .st{font-size:.9rem;opacity:.85}
 .oh{font:400 1.3rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:0 0 .6rem;color:var(--red)}
@@ -191,6 +198,7 @@ PoolNight est une association étudiante dédiée à la promotion du billard sou
 
 <section id="p-classement" hidden>
 <div class="rw"><h2 class="rib">Classement</h2></div>
+<div class="lbt" role="group" aria-label="Type de classement"><button type="button" id="lbt-all" onclick="lbSet('all')">Général</button><button type="button" id="lbt-tournois" onclick="lbSet('tournois')">Tournois</button><button type="button" id="lbt-defis" onclick="lbSet('defis')">Défis</button></div>
 <div class="lbw" id="lb"></div>
 <p class="st" id="lbn"></p>
 <div class="btns"><button class="btn" onclick="defiOpen()">Défie tes amis</button></div>
@@ -301,7 +309,7 @@ function extractTournoi(t){
  return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open,champs};
 }
 /* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
-function board(){
+function board(src='all'){
  const P={};
  const get=nm=>P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0});
  const play=m=>{
@@ -309,19 +317,29 @@ function board(){
    const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
    A.elo+=d;B.elo-=d;(sa?A:B).elo+=BONUS_WIN;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
  },ev=[];
- D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
- CH.filter(d=>d.status==='confirmed').forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
+ if(src!=='defis')D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
+ if(src!=='tournois')CH.filter(d=>d.status==='confirmed').forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
  ev.sort((x,y)=>x.ts-y.ts);   /* tri stable : à date égale, l'ordre d'enregistrement est conservé */
  ev.forEach(e=>{if(e.t){e.t.matches.forEach(play);(e.t.champs||[]).forEach(n=>{get(n).elo+=BONUS_TITLE})}else play({a:e.d.a,b:e.d.b,w:e.d.w})});
  return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
 }
+const BALLC=['#f2c200','#1f4fa8','#d3291f','#5b2a86','#ee7a14','#1f7a3a','#7a1f1f','#141414'];
+const ball=n=>`<span class="bl${n>8?' s':''}" style="--c:${BALLC[(n-1)%8]}" role="img" aria-label="Rang ${n}"><b>${n}</b></span>`;
+let LB='all';
+function lbSet(m){LB=m;renderBoard()}
 function renderBoard(){
- const rows=board();
+ const rows=board(LB);
+ ['all','tournois','defis'].forEach(k=>{const b=$('lbt-'+k);if(b)b.setAttribute('aria-pressed',k===LB)});
+ const empty={all:'Le classement apparaîtra après le premier tournoi importé.',tournois:'Aucun tournoi importé pour l’instant.',defis:'Aucun défi confirmé pour l’instant.'}[LB];
  $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th class="pts">ELO</th><th>Matchs</th><th>Victoires</th><th>Défaites</th><th>Win rate</th><th>Variation</th></tr>${rows.map(x=>{
   const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
-  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
-  :'<div class="empty">Le classement apparaîtra après le premier tournoi importé.</div>';
- $('lbn').textContent=`Classement ELO global : chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire et ${BONUS_TITLE} points pour chaque titre de tournoi. Les défis entre joueurs comptent une fois confirmés par l’adversaire.`;
+  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk<=15?ball(rk):rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
+  :`<div class="empty">${empty}</div>`;
+ const base=`Chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire`;
+ $('lbn').textContent={
+  all:`Classement ELO général (tournois et défis) : ${base} et ${BONUS_TITLE} points pour chaque titre de tournoi. Les défis entre joueurs comptent une fois confirmés par l’adversaire.`,
+  tournois:`Classement des tournois : ELO calculé uniquement avec les matchs de tournoi. ${base} et ${BONUS_TITLE} points pour chaque titre.`,
+  defis:`Classement des défis : ELO calculé uniquement avec les défis confirmés. ${base}.`}[LB];
 }
 
 /* ---------- défis entre joueurs ---------- */
