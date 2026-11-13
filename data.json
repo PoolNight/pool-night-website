@@ -1,0 +1,308 @@
+{
+ "events": [
+  {
+   "id": "e0",
+   "d": "2026-10-28",
+   "t": "Halloween Night",
+   "l": "",
+   "x": "Soirée billard spéciale Halloween.",
+   "img": "assets/ev-halloween.jpg",
+   "p": "past"
+  },
+  {
+   "id": "e2",
+   "d": "2026-10-14",
+   "t": "Soirée PoolNight",
+   "l": "",
+   "x": "Retour en images sur la soirée du 14 octobre.",
+   "img": "assets/ev-14-octobre.jpg"
+  },
+  {
+   "id": "e1793375111193",
+   "d": "2026-11-10",
+   "t": "3e Tournoi PoolNight",
+   "l": "23 av. de Fontainebleau, Kremlin-Bicêtre",
+   "x": "Rejoins nous et tente de prendre la tête du leaderboard",
+   "img": "assets/event_3.png",
+   "p": "past"
+  }
+ ],
+ "results": [
+  {
+   "id": "Tournois #1|2026-10-14",
+   "name": "Tournois #1",
+   "date": "2026-10-14",
+   "matches": [
+    {
+     "a": "Matteo DUPOND",
+     "b": "Léos VOISIN",
+     "w": 0
+    },
+    {
+     "a": "Mathurin PROY",
+     "b": "Nathan BABEC",
+     "w": 0
+    },
+    {
+     "a": "Reda TAHIRI",
+     "b": "Raphael OBLED",
+     "w": 0
+    },
+    {
+     "a": "Ugo PARODAT",
+     "b": "Arthur CARRE",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Mohammed KAYSAN-RAYS",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Raphael NOEL-JEAN",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Adam ABDELMOTALIB",
+     "w": 0
+    },
+    {
+     "a": "Antoine BAUD",
+     "b": "Henrique AFONSO GOMES",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Mathurin PROY",
+     "w": 0
+    },
+    {
+     "a": "Reda TAHIRI",
+     "b": "Ugo PARODAT",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Mathias CADIOU",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Antoine BAUD",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Reda TAHIRI",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Virgile HOQUET-GALLET",
+     "w": 0
+    },
+    {
+     "a": "Virgile HOQUET-GALLET",
+     "b": "Reda TAHIRI",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Lucien TEILLET",
+     "w": 0
+    }
+   ]
+  },
+  {
+   "id": "Tournois Halloween|2026-10-31",
+   "name": "Tournois Halloween",
+   "date": "2026-10-31",
+   "matches": [
+    {
+     "a": "PoolNight ",
+     "b": "Virgile HOQUET-GALLET",
+     "w": 0
+    },
+    {
+     "a": "Marius CHARPENTIER",
+     "b": "Yatharth GARG",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Raphael OBLED",
+     "w": 0
+    },
+    {
+     "a": "Nicolas LEFEVRE-PONTALIS",
+     "b": "Paul GUIHENEC",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Yanis MASSOT",
+     "w": 0
+    },
+    {
+     "a": "Matteo DUPOND",
+     "b": "Emir DUMAN",
+     "w": 0
+    },
+    {
+     "a": "LES FRANTZ ",
+     "b": "Ugo PARODAT",
+     "w": 0
+    },
+    {
+     "a": "Mathurin PROY",
+     "b": "Adam ABDELMOTALIB",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Marius CHARPENTIER",
+     "w": 0
+    },
+    {
+     "a": "Mathias CADIOU",
+     "b": "Nicolas LEFEVRE-PONTALIS",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Matteo DUPOND",
+     "w": 0
+    },
+    {
+     "a": "LES FRANTZ ",
+     "b": "Mathurin PROY",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Mathias CADIOU",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "LES FRANTZ ",
+     "w": 0
+    },
+    {
+     "a": "PoolNight ",
+     "b": "Lucien TEILLET",
+     "w": 0
+    }
+   ]
+  },
+  {
+   "id": "Tournois #3|2026-11-10",
+   "name": "Tournois #3",
+   "date": "2026-11-10",
+   "matches": [
+    {
+     "a": "Mathias Cadiou",
+     "b": "Nicolas Lefèvre-Pontalis",
+     "w": 1
+    },
+    {
+     "a": "Basile Malbois",
+     "b": "Nathan Babec",
+     "w": 1
+    },
+    {
+     "a": "Matteo Dupond",
+     "b": "Virgile Hocquet-Gallet",
+     "w": 0
+    },
+    {
+     "a": "Lucas Lockaim",
+     "b": "Yatharth Garg",
+     "w": 1
+    },
+    {
+     "a": "Henrique Afonso Gomes",
+     "b": "Célia Bocage",
+     "w": 0
+    },
+    {
+     "a": "Emir Duman",
+     "b": "Jules Robert",
+     "w": 1
+    },
+    {
+     "a": "Nicolas Frantz",
+     "b": "Josoa Bradley RAZAFIMBELO",
+     "w": 1
+    },
+    {
+     "a": "Pedro Mendes",
+     "b": "Matteo Dupond",
+     "w": 0
+    },
+    {
+     "a": "Ugo Parodat",
+     "b": "Nicolas Lefèvre-Pontalis",
+     "w": 1
+    },
+    {
+     "a": "adam abdelmotalib",
+     "b": "Yatharth Garg",
+     "w": 0
+    },
+    {
+     "a": "Raphaël Obled",
+     "b": "Alicia Dechnik",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Nathan Babec",
+     "w": 0
+    },
+    {
+     "a": "Marius Charpentier",
+     "b": "Henrique Afonso Gomes",
+     "w": 1
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Jules Robert",
+     "w": 0
+    },
+    {
+     "a": "adam abdelmotalib",
+     "b": "Raphaël Obled",
+     "w": 1
+    },
+    {
+     "a": "Pedro Mendes",
+     "b": "Nicolas Lefèvre-Pontalis",
+     "w": 0
+    },
+    {
+     "a": "Lucien TEILLET",
+     "b": "Pedro Mendes",
+     "w": 1
+    },
+    {
+     "a": "Henrique Afonso Gomes",
+     "b": "Josoa Bradley RAZAFIMBELO",
+     "w": 0
+    },
+    {
+     "a": "Henrique Afonso Gomes",
+     "b": "Raphaël Obled",
+     "w": 0
+    },
+    {
+     "a": "Pedro Mendes",
+     "b": "Henrique Afonso Gomes",
+     "w": 0
+    }
+   ]
+  }
+ ]
+}

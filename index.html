@@ -3,581 +3,559 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PoolNight – Tournoi</title>
+<title>PoolNight – Club de billard d'EPITA</title>
+<meta name="description" content="PoolNight, club de billard d'EPITA : soirées, tournois et carte de membre.">
+<link rel="icon" href="assets/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f3e0c4;--red:#c0281f;--ink:#2f3a32;--card:#f6f3ec;--line:#d9c4a1;--gold:#a8742c}
+:root{--bg:#f3e0c4;--red:#c0281f;--dark:#8f1d16;--ink:#2f3a32;--card:#f6f3ec;--line:#d9c4a1;--gold:#a8742c}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.5}
-header{display:flex;flex-direction:column;align-items:center;gap:.6rem;padding:1.4rem 1rem .6rem}
-header img{width:104px;height:104px;border-radius:50%}
-h1{font:400 clamp(2rem,6vw,3.2rem)/1 Anton,sans-serif;margin:0;letter-spacing:.02em}
-h1 b{color:var(--red);font-weight:400}
-h2{font:400 1.5rem Anton,sans-serif;margin:0 0 .8rem}
-nav{display:flex;gap:.5rem;justify-content:center;margin:.8rem 0 1.2rem}
-nav button{border:2px solid var(--ink);background:none;color:var(--ink);padding:.5rem 1.2rem;border-radius:99px;font-weight:700;font-size:.95rem;font-family:inherit;cursor:pointer}
-nav button.on{background:var(--ink);color:var(--bg)}
-main{max-width:1100px;margin:auto;padding:0 1rem 4rem}
-.polaroid{background:var(--card);padding:1.2rem;border-radius:3px;box-shadow:0 6px 18px #5a3d1a33;margin-bottom:1.6rem}
-.polaroid:nth-of-type(odd){transform:rotate(-.25deg)}.polaroid:nth-of-type(even){transform:rotate(.2deg)}
-.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.6rem 0}
-input,select,textarea{font:inherit;padding:.5rem .6rem;border:1.5px solid var(--ink);border-radius:6px;background:#fff;color:var(--ink);max-width:100%}
-textarea{width:100%;min-height:90px}
-button.b{background:var(--red);color:#fff;border:0;padding:.55rem 1rem;border-radius:6px;font-weight:700;font-size:.95rem;font-family:inherit;cursor:pointer}
-button.b.alt{background:var(--ink)}button.b.ghost{background:none;color:var(--ink);border:1.5px solid var(--ink)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-table{width:100%;border-collapse:collapse}td,th{padding:.3rem;text-align:left;border-bottom:1px solid var(--line)}
-td input,td select{width:100%}
-.hint{font-size:.85rem;opacity:.75;margin:.3rem 0}
-.empty{padding:1rem;border:2px dashed var(--line);border-radius:8px;text-align:center}
-.bname{font:400 1.25rem Anton,sans-serif;color:var(--red);margin:1rem 0 .4rem}
-.scroll{overflow-x:auto;padding-bottom:.6rem}
-.bracket{display:flex;gap:1.4rem;min-width:max-content}
-.round{display:flex;flex-direction:column;min-width:190px}
-.ms{flex:1;display:flex;flex-direction:column}
-.slot{flex:1;display:flex;align-items:center;position:relative;padding:.3rem 0}
-.slot .match{width:100%;position:relative;z-index:1}
-.slot i{position:absolute;pointer-events:none}
-.slot i.d{right:100%;top:50%;width:.7rem;border-top:2px solid var(--ink)}
-.slot i.c{left:100%;width:1.4rem;top:0;bottom:0}
-.slot i.c::before{content:"";position:absolute;left:0;top:50%;width:.7rem;border-top:2px solid var(--ink)}
-.slot i.c.st::before{width:1.4rem}
-.slot i.c.dn::after,.slot i.c.up::after{content:"";position:absolute;left:.7rem;border-left:2px solid var(--ink)}
-.slot i.c.dn::after{top:50%;bottom:0}
-.slot i.c.up::after{top:0;bottom:50%}
-.round h4{margin:0 0 .4rem;font-weight:700;font-size:.8rem;font-family:inherit;text-align:center;opacity:.7}
-.match{background:#fff;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
-.pl{padding:.4rem .6rem;font-size:.9rem;display:flex;justify-content:space-between;gap:.4rem;min-height:2rem}
-.pl+.pl{border-top:1px solid var(--line)}
-.pl small{opacity:.6}
-.pl.win{font-weight:700;background:#e9f1e4}.pl.lose{opacity:.45;text-decoration:line-through}
-.pl.bye{opacity:.4;font-style:italic}
-.org .pl:not(.bye):hover{background:#fbeccd;cursor:pointer}
-.match.path{border-color:var(--red);border-width:2.5px;box-shadow:0 0 0 3px #c0281f26}
-.pl.me{background:var(--red);color:#fff;text-decoration:none;opacity:1}
-.match.now{animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 7px #c0281f40}}
-@media(prefers-reduced-motion:reduce){.match.now{animation:none}}
-.status{font:400 1.3rem Anton,sans-serif;margin:.6rem 0}
-#qr{background:#fff;padding:10px;display:inline-block;border-radius:6px}
-.sname{font-weight:700;font-size:.9rem;margin:1rem 0 .3rem;opacity:.8}
-.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin:.4rem 0 1rem}
-.grp{background:#fff;border:1.5px solid var(--ink);border-radius:8px;padding:.7rem}
-.grp h3{font:400 1.1rem Anton,sans-serif;margin:0 0 .4rem}
-.grp td{font-size:.85rem;padding:.2rem}.grp .q td{font-weight:700}
-.grp tr.mine td{background:var(--red);color:#fff}
-.gm{display:grid;gap:.5rem;margin-top:.6rem}
-.match.live{border-color:#d99a00;background:#fff3c4;box-shadow:0 0 0 3px #f2b705}
-.match.path.live{border-color:var(--red)}
-.match.live.now{animation:none}
-.mt{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;padding:.3rem .4rem;border-top:1px dashed var(--line);background:#faf5ea}
-.mt select{padding:.2rem .3rem;font-size:.8rem;border-radius:4px;min-width:0;flex:1}
-.mt button{padding:.25rem .55rem;font-size:.78rem;border-radius:4px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-weight:700;font-family:inherit;cursor:pointer}
-.mt button.on{background:#f2b705;border-color:#a87c00}
-.mb{display:flex;justify-content:space-between;gap:.4rem;padding:.2rem .6rem;font-size:.78rem;font-weight:700;border-top:1px dashed var(--line);background:#faf5ea}
-.mb em{font-style:normal;color:#8a6500}
-.tbs{display:grid;gap:.5rem;margin-top:.6rem}
-.tbr{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;padding:.4rem .6rem;background:#fff;border:1.5px solid var(--ink);border-radius:6px}
-.tbr input[type=text]{flex:1;min-width:120px}
-.tbr .st{font-size:.8rem;opacity:.8;margin-left:auto}
-.tbr.free{border-color:#3a7d44}.tbr.busy{border-color:#d99a00;background:#fff8dc}
-header a.lg{display:block;border-radius:50%;transition:transform .15s}
-header a.lg:hover{transform:scale(1.05)}
-header a.lg:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-.ball{position:absolute;left:-.7rem;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;z-index:2;pointer-events:none;filter:drop-shadow(0 1px 1px #0005)}
-@media(prefers-reduced-motion:no-preference){.ball{animation:pop .5s ease-out}}
-@keyframes pop{from{transform:scale(.2) rotate(-200deg);opacity:0}}
-.hide{display:none}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.6}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.22;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.hero{position:relative;text-align:center;padding:1.6rem 1rem 1.4rem;overflow:hidden;border-bottom:4px double var(--ink);background:repeating-conic-gradient(from -90deg at 50% 55%,#c0281f14 0 5deg,#0000 5deg 10deg)}
+.top{display:inline-block;font:400 .95rem Anton,sans-serif;letter-spacing:.35em;text-transform:uppercase;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);padding:.2rem 1rem}
+.logo{display:block;width:132px;height:132px;margin:1rem auto .6rem;border-radius:50%;box-shadow:0 0 0 4px var(--bg),0 0 0 7px var(--ink)}
+h1{margin:0;font:400 clamp(3rem,13vw,7rem)/.95 "Abril Fatface",serif;color:var(--red);letter-spacing:.01em;text-shadow:3px 3px 0 var(--ink)}
+h1 span{color:var(--ink);text-shadow:3px 3px 0 var(--red)}
+.sub{font:400 1.2rem Anton,sans-serif;letter-spacing:.2em;text-transform:uppercase;margin:.8rem 0 .2rem}
+.slogan{font:italic 1.15rem "DM Sans",serif;margin:0}
+.rwst{display:flex;align-items:center;justify-content:center;gap:.6rem}
+.rwst .rib{min-width:0;font-size:clamp(1.15rem,4.6vw,1.6rem)}
+.stamp{flex:none;width:clamp(64px,18vw,92px);aspect-ratio:1;border:5px double var(--red);border-radius:50%;color:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:400 clamp(.55rem,2.3vw,.8rem)/1.1 Anton,sans-serif;letter-spacing:.08em;text-transform:uppercase;transform:rotate(14deg);background:#f3e0c4cc}
+.stamp b{display:block;font:400 1.9em Anton,sans-serif}
+nav{position:sticky;top:0;z-index:20;background:var(--ink);display:flex;justify-content:center;flex-wrap:wrap;border-bottom:3px solid var(--red)}
+nav a{color:var(--bg);text-decoration:none;font:400 1rem Anton,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:.8rem 1.1rem;border-bottom:4px solid transparent;margin-bottom:-3px}
+nav a:hover{background:#ffffff14}
+nav a[aria-current]{color:#fff}
+/* queue de billard : remplace le soulignement de l'onglet actif */
+#cue,#ball{position:absolute;z-index:2;pointer-events:none;transition:opacity .2s;left:0;top:0}
+#cue{height:8px;clip-path:polygon(0 0,100% 32%,100% 68%,0 100%);background:linear-gradient(90deg,#5a3a1c 0 10%,#c0281f 10% 14%,#5a3a1c 14% 18%,#e9cf9c 18% 93%,#4f9ac4 93%)}
+#ball{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 35%,#e4dccb 75%,#b9ae96);box-shadow:0 1px 2px #0007}
+#ball i{position:absolute;inset:0;border-radius:50%}
+#ball i::after{content:"";position:absolute;left:2px;top:3px;width:3.5px;height:3.5px;border-radius:50%;background:var(--red)}
+#cue.off,#ball.off{opacity:0}
+#defi input,#defi select,.o select{font:inherit;padding:.45rem .6rem;border:1.5px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);max-width:100%}
+#defi{margin-top:1.2rem}#dflog{margin-top:1.4rem}
+.dfl{display:flex;justify-content:space-between;gap:1rem;padding:.45rem .2rem;border-bottom:1px dashed var(--line)}
+.dh{font:400 1rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:.9rem 0 .2rem}
+nav a.ext::after{content:" \2197"}
+main{max-width:1000px;margin:auto;padding:2rem 1rem 3rem}
+.rw{text-align:center;margin:2.2rem 0 1.4rem}
+.rw:first-child{margin-top:0}
+.rib{display:inline-block;position:relative;z-index:0;margin:0 1rem;padding:.35rem 1.6rem;background:var(--red);color:var(--card);font:400 1.6rem Anton,sans-serif;letter-spacing:.07em;text-transform:uppercase}
+.rib::before,.rib::after{content:"";position:absolute;z-index:-1;top:.55rem;width:1.4rem;height:100%;background:var(--dark)}
+.rib::before{left:-1rem;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,.7rem 50%)}
+.rib::after{right:-1rem;clip-path:polygon(0 0,100% 0,calc(100% - .7rem) 50%,100% 100%,0 100%)}
+.frame{border:3px solid var(--ink);outline:1px solid var(--ink);outline-offset:-10px;padding:1.6rem;background:#f8ecd6}
+.grid{display:grid;gap:1.6rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:center}
+.lead{font:400 1.55rem/1.25 "Abril Fatface",serif;margin:0 0 .6rem;color:var(--red)}
+.infos{list-style:none;padding:0;margin:1rem 0 0;display:grid;gap:.5rem}
+.infos li{border-left:4px solid var(--red);padding-left:.8rem}
+.infos b{font:400 .95rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.btn{display:inline-block;background:var(--red);color:var(--card);text-decoration:none;font:400 1.05rem Anton,sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:.7rem 1.4rem;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn.alt{background:var(--ink)}
+.btns{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:1.1rem}
+.polaroid{background:var(--card);padding:.8rem .8rem 1rem;box-shadow:0 6px 18px #5a3d1a40;margin:0}
+.polaroid.tilt{transform:rotate(2deg)}
+.polaroid figcaption{font:400 1rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-top:.6rem}
+.polaroid video{display:block;width:100%;background:#f9dca3}
+.next{margin-top:1.4rem;padding:.9rem 1.1rem;border:2px dashed var(--ink);background:#fff8}
+.next b{font-family:Anton,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.team{display:grid;gap:1.6rem;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.member{text-align:center}
+.member:nth-child(odd){transform:rotate(-1.2deg)}.member:nth-child(even){transform:rotate(1deg)}
+.ph{position:relative;aspect-ratio:4/5;background:#d9c4a1 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'%3E%3Ccircle cx='40' cy='38' r='15' fill='%23b9a27c'/%3E%3Cpath d='M10 100c0-24 13-36 30-36s30 12 30 36z' fill='%23b9a27c'/%3E%3C/svg%3E") center/70% no-repeat;border:1px solid var(--line)}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.25) contrast(1.05)}
+.member h3{font:400 1.35rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:.8rem 0 0}
+.role{color:var(--red);font:italic 700 1rem "DM Sans",serif;margin:0 0 .4rem}
+.member p:last-child{font-size:.95rem;margin:0}
+.evs{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.ev{background:var(--card);box-shadow:0 6px 18px #5a3d1a40;display:flex;flex-direction:column}
+.ev img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;background:var(--line)}
+.evb{position:relative;padding:1rem 1rem 1.2rem;flex:1}
+.date{position:absolute;right:1rem;top:-2.2rem;background:var(--red);color:var(--card);text-align:center;width:3.6rem;padding:.3rem 0;border:2px solid var(--ink);font:400 .85rem/1 Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.date b{display:block;font-size:1.7rem;line-height:1.1}
+.ev h3{font:400 1.3rem Anton,sans-serif;letter-spacing:.05em;text-transform:uppercase;margin:0 3.6rem .2rem 0}
+.ev p{margin:.2rem 0;font-size:.95rem}.ev .lieu{font-style:italic;opacity:.8}
+.ev.past img{filter:grayscale(.55) sepia(.3)}
+.ev.past .date{background:var(--ink)}
+.empty{padding:1.2rem;border:2px dashed var(--line);text-align:center}
+footer{background:var(--ink);color:var(--bg);text-align:center;padding:1.6rem 1rem;font-size:.9rem}
+footer img{width:56px;height:56px;border-radius:50%;margin-bottom:.4rem}
+footer a{color:var(--bg)}
+.btn{cursor:pointer}
+.btn.sm{font-size:.85rem;padding:.4rem .8rem;box-shadow:3px 3px 0 var(--ink)}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.5rem 0}
+#lvf,.o input:not([type=checkbox]),.o textarea,#p-organisateur input{font:inherit;padding:.45rem .6rem;border:1.5px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);max-width:100%}
+.o textarea{width:100%;min-height:70px}
+.noimg{aspect-ratio:4/5;display:grid;place-items:center;background:var(--line)}
+.noimg img{width:40%;aspect-ratio:1;border-radius:50%}
+.lbw{overflow-x:auto}
+.lb{width:100%;border-collapse:collapse;background:var(--card);box-shadow:0 6px 18px #5a3d1a40}
+.lb th{background:var(--ink);color:var(--bg);font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.55rem .6rem;text-align:left}
+.lb td{padding:.55rem .6rem;border-bottom:1px dashed var(--line)}
+.lb td:first-child{font:400 1.3rem Anton,sans-serif;color:var(--red);width:3rem}
+.lb .pts{font:400 1.2rem Anton,sans-serif;text-align:right}
+.lb th.pts{font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-align:right}
+.lb tr.top1 td{background:#f1d9a6}.lb tr.top2 td{background:#f6e7c7}.lb tr.top3 td{background:#f8efdc}
+.st{font-size:.9rem;opacity:.85}
+.oh{font:400 1.3rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:0 0 .6rem;color:var(--red)}
+#orga .frame{margin-bottom:1.6rem}
+.oe{border:2px solid var(--ink);background:var(--card);padding:.8rem;margin:.9rem 0}
+.tag{font:400 .8rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .6rem;border:2px solid var(--ink)}
+.tag.p{background:var(--ink);color:var(--bg)}.tag.u{background:var(--red);color:var(--card)}
+.mono{display:block;font-family:monospace;word-break:break-all;background:#fff;padding:.5rem;margin:.5rem 0}
+label.btn{display:inline-block}
+[hidden]{display:none!important}
+@media(max-width:560px){.stamp{display:none}nav a{padding:.7rem .6rem;font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
 </style>
 </head>
 <body>
-<header>
-<a class="lg" href="https://poolnight.github.io/pool-night-website/" target="_blank" rel="noopener noreferrer" aria-label="Site officiel de PoolNight (nouvel onglet)"><img src="data:image/jpeg;base64,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" alt="Logo PoolNight"></a>
-<h1>Tournoi <b>PoolNight</b></h1>
+<header class="hero">
+<span class="top">★ Club de billard ★</span>
+<img class="logo" src="assets/logo.jpg" alt="Logo PoolNight">
+<h1>Pool<span>Night</span></h1>
+<p class="sub">EPITA/EPITECH Paris</p>
+<p class="slogan">Le billard et jeux de bar.</p>
 </header>
-<nav>
-<button id="tO" onclick="go('org')">Organisateur</button>
-<button id="tP" onclick="go('pl')">Joueur</button>
+
+<nav aria-label="Navigation principale">
+<a id="t-presentation" href="#presentation">Présentation</a>
+<a id="t-bureau" href="#bureau">Le bureau</a>
+<a id="t-tournois" href="#tournois">Tournois</a>
+<a id="t-evenements" href="#evenements">Évènements</a>
+<a id="t-classement" href="#classement">Classement</a>
+<div id="cue" class="off" aria-hidden="true"></div><div id="ball" class="off" aria-hidden="true"><i></i></div>
 </nav>
+
 <main>
-<section id="vO" class="org hide">
-<div class="polaroid">
-<h2>Participants</h2>
-<p class="hint">Sur HelloAsso : Mon espace › Billetterie › Exporter les participants (CSV). Colle le contenu ci-dessous ou charge le fichier. Colonnes lues : prénom, nom, niveau.</p>
-<textarea id="csv" placeholder="Prénom;Nom;Niveau&#10;Léa;Martin;Confirmé"></textarea>
-<div class="row">
-<button class="b" onclick="importCsv()">Importer</button>
-<input type="file" id="file" accept=".csv,.txt" onchange="loadFile(this)">
-<button class="b ghost" onclick="sync()">Synchroniser HelloAsso</button>
-</div>
-<div class="row">
-<input id="np" placeholder="Prénom" aria-label="Prénom"><input id="nn" placeholder="Nom" aria-label="Nom">
-<select id="nl"></select>
-<button class="b alt" onclick="addP()">Ajouter</button>
-</div>
-<div id="plist"></div>
+<section id="p-presentation">
+<div class="rw"><h2 class="rib">L’association</h2></div>
+<div class="frame">
+<p class="lead">Des soirées, du billard, des fléchettes et des jeux de bar.</p>
+<p>Bienvenue à PoolNight, l'association de billard de EPITA !
+PoolNight est une association étudiante dédiée à la promotion du billard sous toutes ses formes : billard français, américain, snooker, et plus encore.<br>Rejoindre PoolNight, c’est faire partie d’une communauté soudée de joueurs qui partagent l’amour du billard et l’envie de progresser ensemble !</p>
+<ul class="infos">
+<li><b>Où ?</b><br>After-works a EPITA et évènements au New Billard, 23 av. de Fontainebleau, 94270 Le Kremlin-Bicêtre</li>
+<li><b>Quand ?</b><br>Des soirées régulières, à retrouver dans l’onglet Évènements</li>
+</ul>
 </div>
 
-<div class="polaroid">
-<h2>Tournoi</h2>
-<div class="row">
-<select id="fmt" onchange="S.format=this.value;save();fmtUI()" aria-label="Format du tournoi">
-<option value="se">Élimination directe</option>
-<option value="de">Double élimination</option>
-<option value="po">Poules puis phase finale</option>
-</select>
-<span id="poOpts" class="row hide" style="margin:0">
-<select id="psz" onchange="S.size=+this.value;save()" aria-label="Joueurs par poule"><option value="3">Poules de 3</option><option value="4">Poules de 4</option><option value="5">Poules de 5</option></select>
-<select id="pq" onchange="S.q=+this.value;save()" aria-label="Qualifiés par poule"><option value="1">1 qualifié par poule</option><option value="2">2 qualifiés par poule</option><option value="3">3 qualifiés par poule</option></select>
-</span>
+<div class="rw rwst">
+<div class="stamp" aria-hidden="true"><span><b>-35%</b></span>New Billard</div>
+<h2 class="rib">Devenir membre</h2>
 </div>
-<div class="row">
-<select id="mode" onchange="S.mode=this.value;save()">
-<option value="level">Un tableau par niveau</option>
-<option value="all">Un tableau unique (têtes de série par niveau)</option>
-</select>
-<input id="ntb" type="number" min="0" max="30" placeholder="Nombre de tables (facultatif)" style="width:230px" onchange="setNT(this.value)" aria-label="Nombre de tables (facultatif)">
-<button class="b" onclick="gen()">Générer le tableau</button>
-<button class="b ghost" onclick="exportJson()">Exporter tournoi.json</button>
-<button class="b ghost" onclick="resetAll()">Tout effacer</button>
+<div class="grid">
+<div>
+<p class="lead">Rejoins le club, reçois ta carte.</p>
+<p>La carte de membre te donne ta place dans l’association et une réduction de 35% au New Billard. L’adhésion se fait en ligne depuis notre lien.</p>
+<div class="btns"><a class="btn" href="https://www.helloasso.com/associations/epitas/evenements/adhesion-poolnight-2026">Devenir membre</a></div>
 </div>
-<p class="hint">Clique sur un joueur pour le déclarer vainqueur : il passe automatiquement au tour suivant. Re-clique pour annuler. En double élimination, le perdant passe automatiquement dans le tableau des repêchages. En poules, clique le vainqueur de chaque match : les qualifiés rejoignent la phase finale dès que la poule est terminée (égalité : confrontation directe, sinon ordre du tirage).</p>
-<div id="bO"></div>
+<figure class="polaroid tilt">
+<img src="assets/carte.gif" alt="Carte de membre PoolNight" style="width: 100%; max-width: 500px; height: auto;">
+<figcaption>Ta carte de membre</figcaption>
+</figure>
 </div>
 
-<div class="polaroid" id="tbsec">
-<h2>Tables</h2>
-<p class="hint">Renseigne le nombre de tables dans « Tournoi » (facultatif), puis nomme-les ici. Quand tu coches « Prête », la table est attribuée automatiquement au prochain match dès qu’elle est libre. Tu peux aussi choisir la table de chaque match à la main dans son menu déroulant, et marquer un match « En cours » (encadré en jaune).</p>
-<div class="tbs" id="tbl"></div>
+<div class="rw"><h2 class="rib">Participer à l’évènement</h2></div>
+<div class="frame">
+<p class="lead">Viens jouer avec nous.</p>
+<p>Les inscriptions aux soirées et aux tournois se font via notre lien. Un seul endroit pour tout retrouver.</p>
+<div class="next" id="next" hidden></div>
+<div class="btns">
+<a class="btn" data-lt target="_blank" rel="noopener noreferrer">S’inscrire</a>
+<a class="btn alt" href="#tournois">Voir les tournois</a>
+<a class="btn alt" data-insta target="_blank" rel="noopener noreferrer">Instagram</a>
 </div>
-
-<div class="polaroid">
-<h2>Publication instantanée</h2>
-<p class="hint">À chaque résultat saisi, le tournoi est envoyé au serveur Netlify : les joueurs le voient dès qu’ils actualisent (sans attendre de déploiement). La clé reste uniquement dans ce navigateur.</p>
-<div class="row">
-<input id="ghT" type="password" placeholder="Clé organisateur" aria-label="Clé organisateur" style="min-width:260px">
-<label><input type="checkbox" id="ghA"> Publier automatiquement</label>
-<button class="b alt" onclick="ghSave();publish(true)">Enregistrer et publier maintenant</button>
-</div>
-<p class="hint" id="ghs">Publication désactivée.</p>
-</div>
-
-<div class="polaroid">
-<h2>QR code joueurs</h2>
-<div id="qr"></div>
-<p class="hint" id="qrurl"></p>
-<p class="hint">Les joueurs lisent la dernière version publiée à chaque ouverture et toutes les 20 secondes une fois leur nom saisi. Sans publication instantanée, exporte tournoi.json et dépose-le à côté de ce fichier.</p>
 </div>
 </section>
 
-<section id="vP" class="hide">
-<div class="polaroid">
-<h2>Où en suis-je ?</h2>
-<div class="row">
-<input id="jp" placeholder="Prénom" aria-label="Prénom"><input id="jn" placeholder="Nom" aria-label="Nom">
-<button class="b" onclick="findMe()">Voir ma place</button>
-</div>
-<div id="me"></div>
-</div>
+<section id="p-bureau" hidden>
+<div class="rw"><h2 class="rib">Le bureau</h2></div>
+<div class="team" id="team"></div>
+</section>
+
+<section id="p-classement" hidden>
+<div class="rw"><h2 class="rib">Classement</h2></div>
+<div class="lbw" id="lb"></div>
+<p class="st" id="lbn"></p>
+<div class="btns"><button class="btn" onclick="defiOpen()">Défie tes amis</button></div>
+<div class="frame" id="defi" hidden></div>
+<div id="dflog"></div>
+</section>
+
+<section id="p-tournois" hidden>
+<div class="rw"><h2 class="rib">Tournois</h2></div>
+<iframe id="ftour" title="Tournois PoolNight" style="display:block;width:100%;min-height:520px;border:0;background:transparent"></iframe>
+</section>
+
+<section id="p-organisateur" class="o" hidden>
+<div class="rw"><h2 class="rib">Organisateur</h2></div>
+<form id="login" class="frame" onsubmit="login(event)">
+<p class="lead">Espace réservé au bureau.</p>
+<div class="row"><input type="password" id="pw" placeholder="Mot de passe" autocomplete="current-password" aria-label="Mot de passe"><button class="btn" type="submit">Entrer</button></div>
+<p class="st" id="lerr" role="alert"></p>
+</form>
+<div id="orga" hidden></div>
+</section>
+
+<section id="p-evenements" hidden>
+<div class="rw"><h2 class="rib">À venir</h2></div>
+<div class="evs" id="up"></div>
+<div class="rw"><h2 class="rib">Évènements passés</h2></div>
+<div class="evs" id="past"></div>
 </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<footer>
+<img src="assets/logo.jpg" alt="">
+<p>PoolNight · Club de billard · EPITA et EPITECH<br>
+<a data-insta target="_blank" rel="noopener noreferrer">Instagram @clubpoolnight</a> · <a href="#organisateur">Espace organisateur</a></p>
+</footer>
+
 <script>
-const LV=['Débutant','Intermédiaire','Confirmé'];
-const HELLOASSO_ENDPOINT='';  // URL de ton petit serveur renvoyant [{prenom,nom,niveau}]
+/* ===== À MODIFIER ===== */
+const LINKTREE='https://linktr.ee/clubpoolnight';                // lien du link-tree (vide = redirige vers Instagram)
+const INSTA='https://www.instagram.com/clubpoolnight?utm_source=ig_web_button_share_sheet&srtk=ZDNlZDc0MzIxNw==';
+const BUREAU=[
+ {n:'Pierre-Louis Rouchette',r:'Président',d:'Mister WoWyde, au service des passionnés·ées de billard.',img:'assets/bureau-1.png'},
+ {n:'Joseph Devin',r:'Vice-président',d:'"Je suis le bon jo 🪕"',img:'assets/bureau-2.png'},
+ {n:'Adrien Le Berre',r:'Trésorier',d:'Trésorier sur le papier, tout le reste en vrai.',img:'assets/bureau-3.jpg'},
+ {n:'Tanguy De-Jerphanion',r:'Respo dev',d:'Staff +++',img:'assets/bureau-4.png'}
+];
+const DEFAULT_EVENTS=[ /* date au format AAAA-MM-JJ. Une fois l'espace organisateur utilisé, c'est data.json qui fait foi. */
+ {id:'e0',d:'2026-10-31',t:'Halloween Night',l:'',x:'Soirée billard spéciale Halloween.',img:'assets/ev-halloween.jpg'},
+ {id:'e1',d:'2026-10-28',t:'Soirée PoolNight',l:'23 av. de Fontainebleau, 94270 Le Kremlin-Bicêtre',x:'Une soirée billard entre amis. Merci à tous ceux qui sont venus !',img:'assets/ev-28-octobre.jpg'},
+ {id:'e2',d:'2026-10-14',t:'Soirée PoolNight',l:'',x:'Retour en images sur la soirée du 14 octobre.',img:'assets/ev-14-octobre.jpg'}
+];
+/* Espace organisateur : empreinte SHA-256 du mot de passe (mot de passe provisoire : billard2026).
+   Génère la tienne depuis l'espace organisateur, section « Mot de passe ». */
+const ORGA_HASH='b6ce38453fed226d97fc71a95036c434f6d69015ce7198a1747ad048503558c3';
+const ELO_START=1000,ELO_K=32,BONUS_WIN=5,BONUS_TITLE=25; /* paramètres du classement ELO (voir Systeme_ELO_Billard_Global.xlsx) */
+const DATA_PATH='data.json';
+/* ====================== */
 const $=id=>document.getElementById(id);
-const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-const rank=l=>{const i=LV.findIndex(x=>norm(x).slice(0,3)===norm(l).slice(0,3));return i<0?0:i};
-let S={players:[],brackets:null,mode:'level'};
-try{const x=JSON.parse(localStorage.getItem('poolnight'));if(x)S=x}catch(e){}
-const clean=()=>{if(S.brackets&&S.brackets.some(b=>!b.secs))S.brackets=null};clean();
-const save=()=>{try{localStorage.setItem('poolnight',JSON.stringify(S))}catch(e){}clearTimeout(ghTimer);ghTimer=setTimeout(()=>publish(),1500)};
-const pl=id=>S.players.find(p=>p.id===id);
-const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.querySelectorAll('[data-lt]').forEach(a=>a.href=LINKTREE||INSTA);
+document.querySelectorAll('[data-insta]').forEach(a=>a.href=INSTA);
 
-/* ---------- import ---------- */
-function parseCsv(t){
- const lines=t.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
- const d=(lines[0].match(/;/g)||[]).length>=(lines[0].match(/,/g)||[]).length?';':',';
- const cut=l=>l.split(d).map(c=>c.replace(/^"|"$/g,'').trim());
- const h=cut(lines[0]).map(norm);
- let ip=h.findIndex(c=>c.includes('prenom')),inn=h.findIndex(c=>c.includes('nom')&&!c.includes('prenom')),il=h.findIndex(c=>c.includes('niveau'));
- let rows=lines;
- if(ip<0||inn<0){ip=0;inn=1;il=il<0?2:il}else rows=lines.slice(1);
- return rows.map(cut).filter(r=>r[ip]||r[inn]).map(r=>({p:r[ip]||'',n:r[inn]||'',l:LV[rank(r[il])]}));
-}
-function addMany(a){
- a.forEach(x=>{if(!S.players.some(p=>norm(p.p+p.n)===norm(x.p+x.n)))S.players.push({id:uid(),...x})});
- save();renderP();
-}
-function importCsv(){addMany(parseCsv($('csv').value));$('csv').value=''}
-function loadFile(i){const f=i.files[0];if(f)f.text().then(t=>addMany(parseCsv(t)))}
-async function sync(){
- if(!HELLOASSO_ENDPOINT)return alert('HelloAsso n’autorise pas la lecture directe depuis une page web (clé API secrète). Utilise l’import CSV, ou renseigne HELLOASSO_ENDPOINT avec l’adresse de ton propre serveur.');
- try{const r=await (await fetch(HELLOASSO_ENDPOINT)).json();addMany(r.map(x=>({p:x.prenom,n:x.nom,l:LV[rank(x.niveau)]})))}catch(e){alert('Synchronisation impossible.')}
-}
+$('team').innerHTML=BUREAU.map(m=>`<article class="polaroid member"><div class="ph"><img src="${esc(m.img)}" alt="Photo de ${esc(m.n)}" loading="lazy" onerror="this.remove()"></div><h3>${esc(m.n)}</h3><p class="role">${esc(m.r)}</p><p>${esc(m.d)}</p></article>`).join('');
 
-/* ---------- participants ---------- */
-function opts(sel){return LV.map(l=>`<option${l===sel?' selected':''}>${l}</option>`).join('')}
-function renderP(){
- $('nl').innerHTML=opts();
- const ps=S.players;
- $('plist').innerHTML=ps.length?`<table><tr><th>Prénom</th><th>Nom</th><th>Niveau</th><th></th></tr>${ps.map(p=>`<tr>
- <td><input value="${esc(p.p)}" onchange="ed('${p.id}','p',this.value)" aria-label="Prénom"></td>
- <td><input value="${esc(p.n)}" onchange="ed('${p.id}','n',this.value)" aria-label="Nom"></td>
- <td><select onchange="ed('${p.id}','l',this.value)" aria-label="Niveau">${opts(p.l)}</select></td>
- <td><button class="b ghost" onclick="del('${p.id}')">Supprimer</button></td></tr>`).join('')}</table><p class="hint">${ps.length} participant(s)</p>`
- :'<div class="empty">Aucun participant. Importe le CSV HelloAsso ou ajoute-les à la main.</div>';
- $('mode').value=S.mode;$('fmt').value=S.format||'se';$('psz').value=S.size||4;$('pq').value=S.q||2;fmtUI();renderB();
-}
-function ed(id,k,v){const p=pl(id);p[k]=v.trim()||p[k];save();renderB()}
-function addP(){
- const p=$('np').value.trim(),n=$('nn').value.trim();if(!p||!n)return alert('Prénom et nom requis.');
- const x={id:uid(),p,n,l:$('nl').value};S.players.push(x);
- if(S.brackets){
-  const b=S.brackets.find(b=>b.level===(S.mode==='level'?x.l:'all'));let ok=false;
-  if(b&&b.type!=='po')for(const m of b.secs[0].rounds[0]){
-   if(m.a==='-'&&m.b!=='-'){m.a=x.id;m.w=null;ok=true;break}
-   if(m.b==='-'&&m.a!=='-'){m.b=x.id;m.w=null;ok=true;break}
-  }
-  if(ok)prop(b);else alert('Impossible d’ajouter ce joueur au tableau en cours (aucune place libre, ou phase de poules déjà tirée). Régénère le tableau pour l’inclure.');
- }
- $('np').value=$('nn').value='';save();renderP();
-}
-function del(id){
- if(!confirm('Supprimer ce participant ?'))return;
- S.players=S.players.filter(p=>p.id!==id);
- (S.brackets||[]).forEach(b=>{
-  if(b.type==='po')b.groups.forEach(g=>{g.ps=g.ps.filter(x=>x!==id);g.ms=g.ms.filter(m=>m.a!==id&&m.b!==id)});
-  else b.secs[0].rounds[0].forEach(m=>{if(m.a===id)m.a='-';if(m.b===id)m.b='-'});
-  prop(b)});
- save();renderP();
+const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const day=s=>{const [y,m,d]=(s||iso(new Date())).split('-').map(Number);return new Date(y,m-1,d)};
+const t0=new Date();t0.setHours(0,0,0,0);
+const ss=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}};
+let D={events:DEFAULT_EVENTS.map(e=>({...e})),results:[]};
+let dirty=false,auto=false,pubBusy=false,pubAgain=false,pubTimer;
+try{auto=localStorage.getItem('pn_auto')==='1'}catch(e){}
+
+/* ---------- évènements ---------- */
+const isPast=e=>e.p==='past'||(e.p!=='up'&&day(e.d)<t0);
+function noimg(el){el.outerHTML='<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}
+const card=(e,past)=>{const d=day(e.d);
+ return `<article class="ev${past?' past':''}"${past?'':` onclick="window.open(LINKTREE||INSTA,'_blank','noopener')" onkeydown="if(event.key==='Enter')this.click()" tabindex="0" role="link" style="cursor:pointer"`}>${e.img?`<img src="${esc(e.img)}" alt="Affiche : ${esc(e.t)}" loading="lazy" onerror="noimg(this)">`:'<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}<div class="evb"><div class="date"><b>${d.getDate()}</b>${d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')}</div><h3>${esc(e.t)}</h3>${e.l?`<p class="lieu">${esc(e.l)}</p>`:''}<p>${esc(e.x)}</p></div></article>`};
+function renderEvents(){
+ const up=D.events.filter(e=>!isPast(e)).sort((a,b)=>day(a.d)-day(b.d)),past=D.events.filter(isPast).sort((a,b)=>day(b.d)-day(a.d));
+ $('up').innerHTML=up.length?up.map(e=>card(e,false)).join(''):'<div class="empty">Pas d’évènement annoncé pour le moment. Suis-nous sur Instagram pour les prochaines dates !</div>';
+ $('past').innerHTML=past.length?past.map(e=>card(e,true)).join(''):'<div class="empty">Aucun évènement passé.</div>';
+ const n=$('next');
+ if(up.length){n.hidden=false;n.innerHTML=`Prochain rendez-vous : <b>${esc(up[0].t)}</b>, le ${day(up[0].d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}.`}else n.hidden=true;
 }
 
-/* ---------- tables ---------- */
-const TBS=()=>S.tables||(S.tables=[]);
-const tbName=id=>{const t=(S.tables||[]).find(t=>t.id===id);return t?t.name:''};
-function allMs(){
- const a=[];
- (S.brackets||[]).forEach(b=>{
-  (b.groups||[]).forEach(g=>g.ms.forEach(m=>a.push({m,r:0})));
-  b.secs.forEach(s=>s.rounds.forEach((R,r)=>R.forEach(m=>a.push({m,r:1+r}))));
+/* ---------- classement ELO ---------- */
+const real=i=>i&&i!=='-';
+const pkey=n=>norm(n).split(/\s+/).sort().join(' ');
+function podium(b){
+ if(b.type==='de'){const [gf,rs]=b.secs[2].rounds.map(r=>r[0]);if(!real(gf.w))return[null,null];const m=gf.w===gf.a?gf:rs;return real(m.w)?[m.w,m.w===m.a?m.b:m.a]:[null,null]}
+ const R=b.secs[0].rounds,f=R[R.length-1][0];return real(f.w)?[f.w,f.w===f.a?f.b:f.a]:[null,null];
+}
+/* Liste ordonnée des matchs réellement joués d'un tournoi (les byes ne comptent pas).
+   Ordre : horodatage de saisie (m.t) s'il existe partout, sinon ordre logique des tours. */
+function extractTournoi(t){
+ if(!t||!Array.isArray(t.players)||!Array.isArray(t.brackets)||!t.brackets.length||t.brackets.some(b=>!b.secs))throw new Error('Format non reconnu : exporte tournoi.json depuis la dernière version de la page tournois, avec un tableau généré.');
+ const P={},L=[],champs=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
+ const nm=id=>`${P[id].p} ${P[id].n}`.trim();
+ t.brackets.forEach((b,bi)=>{
+  const add=(m,key)=>{if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.a]&&P[m.b]&&m.a!==m.b)L.push({a:nm(m.a),b:nm(m.b),w:m.w===m.a?0:1,t:m.t,key,bi,seq:seq++})};
+  (b.groups||[]).forEach(g=>g.ms.forEach(m=>add(m,0)));
+  b.secs.forEach((s,si)=>s.rounds.forEach((R,r)=>R.forEach(m=>add(m,b.type==='po'?1+r:b.type==='de'?(si===0?2*r:si===1?r+1.5:1000+r):r))));
+  const ch=podium(b)[0];if(ch&&P[ch])champs.push(nm(ch));else open++;
  });
- return a.sort((x,y)=>x.r-y.r);
+ const ts=L.length>0&&L.every(x=>typeof x.t==='number');
+ L.sort(ts?(x,y)=>x.t-y.t||x.seq-y.seq:(x,y)=>x.key-y.key||x.bi-y.bi||x.seq-y.seq);
+ return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open,champs};
 }
-const playable=m=>m.w===null&&pl(m.a)&&pl(m.b);
-/* attribue chaque table prête et libre au prochain match jouable (tours les plus anciens d'abord) */
-function autoAssign(){
- const ts=S.tables||[];if(!ts.length||!S.brackets)return false;
- const L=allMs(),ids=new Set(ts.map(t=>t.id)),used=new Set(),busy=new Set();
- L.forEach(({m})=>{
-  if(m.tb&&m.w===null){if(ids.has(m.tb)){used.add(m.tb);busy.add(m.a);busy.add(m.b)}else delete m.tb}
- });
- let ch=false;
- for(const t of ts){
-  if(!t.ready||used.has(t.id))continue;
-  const c=L.find(({m})=>playable(m)&&!m.tb&&!busy.has(m.a)&&!busy.has(m.b));
-  if(c){c.m.tb=t.id;used.add(t.id);busy.add(c.m.a);busy.add(c.m.b);ch=true}
- }
- return ch;
+/* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
+function board(){
+ const P={};
+ const get=nm=>P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0});
+ const play=m=>{
+   const A=get(m.a),B=get(m.b);if(A===B)return;
+   const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
+   A.elo+=d;B.elo-=d;(sa?A:B).elo+=BONUS_WIN;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
+ },ev=[];
+ D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
+ CH.filter(d=>d.status==='confirmed').forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
+ ev.sort((x,y)=>x.ts-y.ts);   /* tri stable : à date égale, l'ordre d'enregistrement est conservé */
+ ev.forEach(e=>{if(e.t){e.t.matches.forEach(play);(e.t.champs||[]).forEach(n=>{get(n).elo+=BONUS_TITLE})}else play({a:e.d.a,b:e.d.b,w:e.d.w})});
+ return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
 }
-function setNT(v){
- const n=Math.max(0,Math.min(30,parseInt(v,10)||0)),ts=TBS();
- while(ts.length<n)ts.push({id:'t'+uid(),name:'Table '+(ts.length+1),ready:false});
- if(ts.length>n){
-  const gone=new Set(ts.splice(n).map(t=>t.id));
-  allMs().forEach(({m})=>{if(gone.has(m.tb))delete m.tb});
- }
- autoAssign();save();renderB();
-}
-function tbSet(id,k,v){
- const t=TBS().find(t=>t.id===id);if(!t)return;
- if(k==='name')t.name=v.trim()||t.name;else t[k]=v;
- if(k==='ready')autoAssign();
- save();renderB();
-}
-function pickTable(k,v){
- const r=REG[k];if(!r)return;
- if(v&&allMs().some(x=>x.m!==r.m&&x.m.tb===v&&x.m.w===null)){alert('Cette table est déjà utilisée par un autre match.');renderB();return}
- if(v)r.m.tb=v;else delete r.m.tb;
- save();renderB();
-}
-function toggleLive(k){
- const r=REG[k];if(!r)return;
- if(r.m.live)delete r.m.live;else r.m.live=true;
- save();renderB();
-}
-function renderT(){
- const ts=S.tables||[],busy={};
- allMs().forEach(({m})=>{if(m.tb&&m.w===null){const a=pl(m.a),b=pl(m.b);busy[m.tb]=a&&b?`${a.p} ${a.n} vs ${b.p} ${b.n}`:'occupée'}});
- const n=$('ntb');if(n&&document.activeElement!==n)n.value=ts.length||'';
- $('tbl').innerHTML=ts.length?ts.map(t=>`<div class="tbr ${busy[t.id]?'busy':t.ready?'free':''}"><input type="text" value="${esc(t.name)}" onchange="tbSet('${t.id}','name',this.value)" aria-label="Nom de la table"><label><input type="checkbox"${t.ready?' checked':''} onchange="tbSet('${t.id}','ready',this.checked)"> Prête</label><span class="st">${busy[t.id]?esc(busy[t.id]):t.ready?'libre':'non prête'}</span></div>`).join('')
-  :'<div class="empty">Aucune table. Saisis un nombre de tables dans la section « Tournoi » (facultatif).</div>';
+function renderBoard(){
+ const rows=board();
+ $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th class="pts">ELO</th><th>Matchs</th><th>Victoires</th><th>Défaites</th><th>Win rate</th><th>Variation</th></tr>${rows.map(x=>{
+  const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
+  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
+  :'<div class="empty">Le classement apparaîtra après le premier tournoi importé.</div>';
+ $('lbn').textContent=`Classement ELO global : chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire et ${BONUS_TITLE} points pour chaque titre de tournoi. Les défis entre joueurs comptent une fois confirmés par l’adversaire.`;
 }
 
-/* ---------- 8 ball : dernier noeud parcouru par le joueur ---------- */
-const BALL='<svg class="ball" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#111" stroke="#fff" stroke-width="1"/><circle cx="12" cy="11.5" r="5.4" fill="#fff"/><text x="12" y="14.6" text-anchor="middle" font-family="Anton,Arial,sans-serif" font-weight="700" font-size="8.5" fill="#111">8</text><ellipse cx="8" cy="6.5" rx="2.6" ry="1.4" fill="#fff" opacity=".45" transform="rotate(-35 8 6.5)"/></svg>';
-function lastNode(b,me){
- let n=null;
- b.secs.forEach(s=>s.rounds.forEach((R,r)=>{if(r>0)R.forEach(m=>{if(m.a===me||m.b===me)n=m})}));
- return n;
-}
+/* ---------- défis entre joueurs ---------- */
+const API=location.protocol==='file:'?'https://pool-night.netlify.app':'';   /* même adresse que le site ; l'adresse complète ne sert que pour ouvrir le fichier en local */
+const DEFI_API=API+'/api/defis';
+let CH=[],DP=null,VAL=false;
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+async function dApi(body,okey){
+ const h={'content-type':'application/json'};if(okey)h['x-organizer-key']=okey;
+ let r;try{r=await fetch(DEFI_API,{method:'POST',headers:h,body:JSON.stringify(body)})}catch(e){throw new Error('Impossible de joindre le serveur des défis.')}
+ const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Erreur '+r.status);return j}
+async function loadDefis(){
+ try{const r=await fetch(DEFI_API+'?'+Date.now());if(!r.ok)return;const j=await r.json();CH=Array.isArray(j.defis)?j.defis:[];VAL=!!j.validation}catch(e){return}
+ renderBoard();renderDefiLog();renderMine();defiCheck()}
+const defiLink=x=>(location.protocol==='file:'?location.href.split('#')[0]:location.origin+location.pathname)+'#classement?defi='+x.id+'&k='+x.ck;
+const mineOf=id=>(lsGet('pn_defis')||[]).find(x=>x.id===id);
+function defiOpen(){DP=null;$('defi').hidden=false;renderDefiForm();$('defi').scrollIntoView({behavior:'smooth',block:'start'})}
+function defiClose(){$('defi').hidden=true}
+function defiLeave(){DP=null;$('defi').hidden=true;try{history.replaceState(null,'','#classement')}catch(e){}}
+function renderDefiForm(){
+ const me=lsGet('pn_me')||'',names=board().map(x=>x.name);
+ $('defi').innerHTML=`<h3 class="oh">Défie un ami</h3>
+<p class="st">Joue ton match, saisis le résultat puis envoie le lien à ton adversaire. Le match compte pour l’ELO dès qu’il le confirme.</p>
+<datalist id="dnames">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+<div class="row"><input id="dme" list="dnames" value="${esc(me)}" placeholder="Ton Prénom NOM" aria-label="Ton nom"><input id="dop" list="dnames" placeholder="Prénom NOM de l’adversaire" aria-label="Nom de l’adversaire"></div>
+<div class="row"><select id="dw" aria-label="Résultat"><option value="0">J’ai gagné</option><option value="1">J’ai perdu</option></select><input id="dsc" placeholder="Score (facultatif) ex. 5-3" maxlength="10" aria-label="Score"></div>
+<div class="row"><button class="btn" id="dgo" onclick="defiSend()">Envoyer le défi</button><button class="btn alt sm" onclick="defiClose()">Fermer</button></div>
+<p class="st" id="dmsg" role="status"></p><div id="dmine"></div>`;
+ renderMine()}
+async function defiSend(){
+ const a=$('dme').value.trim(),b=$('dop').value.trim(),w=+$('dw').value,score=$('dsc').value.trim(),m=$('dmsg');
+ m.textContent='';$('dgo').disabled=true;
+ try{const r=await dApi({action:'create',a,b,w,score});
+  lsSet('pn_me',a);const L=lsGet('pn_defis')||[];L.unshift({id:r.id,ck:r.ck,dk:r.dk,a,b,w,score,t:Date.now()});lsSet('pn_defis',L.slice(0,30));
+  await loadDefis();m.textContent='Défi enregistré ! Envoie le lien à '+b+' (lien ci-dessous) pour qu’il le confirme.';
+  $('dop').value='';$('dsc').value=''}
+ catch(e){m.textContent=e.message}
+ $('dgo').disabled=false}
+function renderMine(){
+ const el=$('dmine');if(!el)return;
+ const L=(lsGet('pn_defis')||[]).map(x=>({x,d:CH.find(c=>c.id===x.id)||(x.a&&Date.now()-x.t<12e4?{id:x.id,a:x.a,b:x.b,w:x.w,score:x.score,status:'pending'}:null)})).filter(y=>y.d).slice(0,6);
+ el.innerHTML=L.length?'<h4 class="dh">Mes défis</h4>'+L.map(({x,d})=>{
+  const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a,st={pending:'En attente de '+d.b,awaiting:'Validation du bureau en cours',confirmed:'Confirmé',rejected:'Contesté',expired:'Expiré'}[d.status]||d.status;
+  return `<div class="oe"><div class="row"><span><b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span class="tag ${d.status==='pending'?'u':'p'}">${esc(st)}</span></div>${d.status==='pending'?`<div class="row"><input readonly value="${esc(defiLink(x))}" onclick="this.select()" aria-label="Lien à envoyer à l’adversaire" style="flex:1;min-width:14rem"></div><div class="row"><button class="btn sm" onclick="defiShare('${x.id}')">Partager le lien</button><button class="btn alt sm" onclick="defiCopy('${x.id}')">Copier le lien</button><button class="btn alt sm" onclick="defiCancel('${x.id}')">Annuler</button></div>`:''}</div>`}).join(''):''}
+async function defiCopy(id){
+ const x=mineOf(id);if(!x)return;const u=defiLink(x),m=$('dmsg');
+ try{await navigator.clipboard.writeText(u);if(m)m.textContent='Lien copié.'}catch(e){prompt('Copie ce lien :',u)}}
+function defiShare(id){
+ const x=mineOf(id),d=CH.find(c=>c.id===id);if(!x||!d)return;
+ const text=`${d.a} ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'} à PoolNight. Confirme le résultat :`;
+ if(navigator.share)navigator.share({title:'Défi PoolNight',text,url:defiLink(x)}).catch(()=>{});else defiCopy(id)}
+async function defiCancel(id){
+ const x=mineOf(id);if(!x)return;
+ try{await dApi({action:'cancel',id,dk:x.dk});lsSet('pn_defis',(lsGet('pn_defis')||[]).filter(y=>y.id!==id));await loadDefis()}
+ catch(e){const m=$('dmsg');if(m)m.textContent=e.message}}
+function defiCheck(){
+ if(!DP)return;
+ const d=CH.find(c=>c.id===DP.id),el=$('defi');el.hidden=false;
+ if(!d){el.innerHTML='<h3 class="oh">Défi introuvable</h3><p class="st">Ce lien n’est plus valable.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>';return}
+ el.innerHTML=`<h3 class="oh">Confirme un défi</h3><p class="lead"><b>${esc(d.a)}</b> ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'}${d.score?' ('+esc(d.score)+')':''}.</p><p class="st">Défi adressé à ${esc(d.b)}.</p>`
+  +(d.status==='pending'?`<p class="st">Si c’est exact, confirme : le match sera compté dans l’ELO des deux joueurs.</p><div class="row"><button class="btn" onclick="defiAnswer(true)">C’est exact</button><button class="btn alt" onclick="defiAnswer(false)">Je conteste</button></div><p class="st" id="dmsg" role="status"></p>`
+   :`<p class="st">Ce défi est déjà ${{confirmed:'confirmé',awaiting:'confirmé, en attente de validation du bureau',rejected:'contesté',expired:'expiré'}[d.status]||'clos'}.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>`)}
+async function defiAnswer(ok){
+ if(!DP)return;
+ try{await dApi({action:'confirm',id:DP.id,ck:DP.k,accept:ok});await loadDefis()}
+ catch(e){const m=$('dmsg');if(m)m.textContent=e.message}}
+function renderDefiLog(){
+ const c=CH.filter(d=>d.status==='confirmed').sort((a,b)=>(b.tc||b.t)-(a.tc||a.t)).slice(0,8),p=CH.filter(d=>d.status==='pending'||d.status==='awaiting').length;
+ $('dflog').innerHTML=c.length||p?'<h3 class="oh">Derniers défis</h3>'+c.map(d=>{const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a;return `<div class="dfl"><span><b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span>${new Date(d.tc||d.t).toLocaleDateString('fr-FR')}</span></div>`}).join('')+(p?`<p class="st">${p} défi${p>1?'s':''} en attente de confirmation ou de validation.</p>`:''):''}
+/* espace orga : corriger ou supprimer les défis */
+const okey=()=>{const v=$('okey')?$('okey').value:(ss('pn_okey')||'');try{sessionStorage.setItem('pn_okey',v)}catch(e){}return v};
+function orgaDefis(){
+ const sel=(v,arr)=>arr.map(([k,t])=>`<option value="${k}"${String(v)===String(k)?' selected':''}>${t}</option>`).join('');
+ const rows=CH.map(d=>`<div class="oe"><div class="row"><input id="oa_${d.id}" value="${esc(d.a)}" aria-label="Joueur A"><span>contre</span><input id="ob_${d.id}" value="${esc(d.b)}" aria-label="Joueur B"></div>
+<div class="row"><select id="ow_${d.id}" aria-label="Vainqueur">${sel(d.w,[[0,'A gagne'],[1,'B gagne']])}</select><input id="os_${d.id}" value="${esc(d.score||'')}" placeholder="Score" size="7" aria-label="Score"><select id="ot_${d.id}" aria-label="Statut">${sel(d.status,[['pending','En attente'],['awaiting','À valider (confirmé par l’adversaire)'],['confirmed','Confirmé'],['rejected','Contesté'],['void','Annulé par l’orga'],['expired','Expiré']])}</select></div>
+<div class="row"><span class="st">Déclaré le ${new Date(d.t).toLocaleString('fr-FR')}${d.tc?' · traité le '+new Date(d.tc).toLocaleString('fr-FR'):''}${d.edited?' · modifié par l’orga':''}</span>${d.status==='awaiting'?`<button class="btn sm" onclick="defiOrgaValidate('${d.id}')">Valider</button>`:''}<button class="btn sm" onclick="defiOrgaSave('${d.id}')">Enregistrer</button><button class="btn alt sm" onclick="defiOrgaDel('${d.id}')">Supprimer</button></div></div>`).join('');
+ return `<div class="frame"><h3 class="oh">Défis des joueurs</h3><p class="st">Tous les défis déclarés. Si un résultat est truqué : change le vainqueur, passe-le en « Annulé » ou supprime-le, l’ELO est recalculé aussitôt pour tout le monde. Seul un défi « Confirmé » compte. A est le joueur qui a déclaré le défi.</p>
+<div class="row"><label><input type="checkbox" id="oval"${VAL?' checked':''} onchange="defiOrgaCfg(this.checked)"> Validation obligatoire par le bureau (un défi confirmé par l’adversaire ne compte qu’après ton « Valider »)</label></div>
+<div class="row"><button class="btn alt sm" onclick="okey();loadDefis().then(renderOrga)">Actualiser la liste</button></div>
+<p class="st" id="odmsg" role="status"></p>${rows||'<p class="st">Aucun défi pour le moment.</p>'}</div>`}
+async function defiOrgaSave(id){
+ const g=k=>$(k+'_'+id).value,m=$('odmsg');
+ try{await dApi({action:'orga_update',id,a:g('oa'),b:g('ob'),w:+g('ow'),score:g('os'),status:g('ot')==='expired'?'pending':g('ot')},okey());
+  await loadDefis();renderOrga();$('odmsg').textContent='Enregistré, ELO recalculé.'}
+ catch(e){m.textContent=e.message}}
+function defiOrgaValidate(id){$('ot_'+id).value='confirmed';defiOrgaSave(id)}
+async function defiOrgaCfg(v){
+ try{await dApi({action:'orga_config',validation:v},okey());VAL=v;$('odmsg').textContent=v?'Validation du bureau activée.':'Validation du bureau désactivée.'}
+ catch(e){$('oval').checked=!v;$('odmsg').textContent=e.message}}
+async function defiOrgaDel(id){
+ if(!confirm('Supprimer définitivement ce défi ?'))return;
+ try{await dApi({action:'orga_delete',id},okey());await loadDefis();renderOrga();$('odmsg').textContent='Défi supprimé, ELO recalculé.'}
+ catch(e){$('odmsg').textContent=e.message}}
 
-/* ---------- tableau ---------- */
-const FMT={se:'Élimination directe',de:'Double élimination',po:'Poules et phase finale'};
-const REG=[];
-const mk=(a,b)=>({a:a,b:b,w:null});
-const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
-const sortSeed=ps=>shuffle(ps).sort((a,b)=>rank(b.l)-rank(a.l));
-function seedOrder(n){let o=[1];while(o.length<n){const m=o.length*2+1;o=o.flatMap(x=>[x,m-x])}return o}
-function seeded(list){let N=2;while(N<list.length)N*=2;return seedOrder(N).map(k=>k<=list.length?list[k-1]:'-')}
-const rname=(r,t)=>t-r===1?'Finale':t-r===2?'Demi-finales':t-r===3?'Quarts de finale':t-r===4?'8es de finale':'Tour '+(r+1);
-/* '-' = place vide définitive (exempt), null = en attente */
-function fix(m){
- const a=m.a,b=m.b;
- if(a==='-'&&b==='-')m.w='-';
- else if(a==='-')m.w=b;
- else if(b==='-')m.w=a;
- else if(a===null||b===null)m.w=null;
- else if(m.w!==null&&m.w!==a&&m.w!==b)m.w=null;
-}
-function set(m,a,b){if(m.a!==a||m.b!==b)m.w=null;m.a=a;m.b=b;fix(m)}
-const lose=m=>m.w===null||m.a===null||m.b===null?null:(m.a==='-'||m.b==='-'?'-':m.w===m.a?m.b:m.a);
-function ko(slots,isRef){
- const t=Math.log2(slots.length),rounds=[];let n=slots.length/2;
- while(n>=1){rounds.push(Array.from({length:n},()=>mk(null,null)));n/=2}
- if(!isRef)rounds[0].forEach((m,i)=>{m.a=slots[2*i];m.b=slots[2*i+1]});
- return {t:'',rounds,titles:rounds.map((_,r)=>rname(r,t)),refs:isRef?slots:null};
-}
-function stand(g){
- const W={};g.ps.forEach(id=>W[id]=0);g.ms.forEach(m=>{if(m.w)W[m.w]++});
- const h=(a,b)=>{const m=g.ms.find(m=>(m.a===a&&m.b===b)||(m.a===b&&m.b===a));return m&&m.w===a?-1:m&&m.w===b?1:0};
- const ids=[...g.ps].sort((a,b)=>W[b]-W[a]||h(a,b)||g.ps.indexOf(a)-g.ps.indexOf(b));
- return {rows:ids.map(id=>({id,v:W[id],d:g.ms.filter(m=>m.w&&(m.a===id||m.b===id)&&m.w!==id).length})),done:g.ms.every(m=>m.w)};
-}
-function res(b,ref){
- if(ref==='-')return '-';
- const s=stand(b.groups[ref.g]);
- return s.done?(s.rows[ref.pos]?s.rows[ref.pos].id:'-'):null;
-}
-function koProp(s,b){
- const R=s.rounds;
- R[0].forEach((m,i)=>s.refs?set(m,res(b,s.refs[2*i]),res(b,s.refs[2*i+1])):set(m,m.a,m.b));
- for(let r=1;r<R.length;r++)R[r].forEach((m,i)=>set(m,R[r-1][2*i].w,R[r-1][2*i+1].w));
-}
-function deProp(b){
- const [W,L,F]=b.secs,Wr=W.rounds,lr=L.rounds;
- koProp(W,b);
- lr.forEach((R,j)=>{const d=L.desc[j];R.forEach((m,i)=>{
-  if(j===0)set(m,lose(Wr[0][2*i]),lose(Wr[0][2*i+1]));
-  else if(d.t==='pair')set(m,lr[j-1][2*i].w,lr[j-1][2*i+1].w);
-  else set(m,lr[j-1][i].w,lose(Wr[d.r][Wr[d.r].length-1-i]));
- })});
- const gf=F.rounds[0][0],rs=F.rounds[1][0];
- set(gf,Wr[Wr.length-1][0].w,lr[lr.length-1][0].w);
- const lb=gf.w!==null&&gf.w===gf.b;
- set(rs,lb?gf.a:null,lb?gf.b:null);
-}
-const prop=b=>b.type==='de'?deProp(b):koProp(b.secs[0],b);
-function chmp(b){
- if(b.type==='de'){const [gf,rs]=b.secs[2].rounds.map(r=>r[0]);return gf.w===null?null:gf.w===gf.a?gf.w:rs.w}
- const R=b.secs[0].rounds;return R[R.length-1][0].w;
-}
-function buildSE(ps,name,level){
- const b={type:'se',name,level,secs:[ko(seeded(sortSeed(ps).map(p=>p.id)))]};prop(b);return b;
-}
-function buildDE(ps,name,level){
- if(ps.length<3)return buildSE(ps,name,level);
- const W=ko(seeded(sortSeed(ps).map(p=>p.id))),Wr=W.rounds,k=Wr.length;
- const desc=[{t:'pair',r:0}];
- for(let r=1;r<k;r++){desc.push({t:'drop',r});if(r<k-1)desc.push({t:'pair',r})}
- let c=Wr[0].length/2;
- const lr=desc.map((d,j)=>{if(j>0)c=d.t==='drop'?Wr[d.r].length:c/2;return Array.from({length:c},()=>mk(null,null))});
- W.t='Tableau des gagnants';W.titles[k-1]='Finale des gagnants';
- const L={t:'Tableau des repêchages',rounds:lr,desc,titles:desc.map((_,j)=>j===desc.length-1?'Finale des repêchages':'Repêchage '+(j+1)),refs:null};
- const F={t:'Finale',rounds:[[mk(null,null)],[mk(null,null)]],titles:['Grande finale','Finale de reset (si besoin)'],refs:null};
- const b={type:'de',name,level,secs:[W,L,F]};prop(b);return b;
-}
-function buildPO(ps,name,level,size,q){
- if(ps.length<3)return buildSE(ps,name,level);
- const s=sortSeed(ps),G=Math.max(1,Math.ceil(s.length/size));
- const groups=Array.from({length:G},()=>({ps:[],ms:[]}));
- s.forEach((p,i)=>{const row=Math.floor(i/G);groups[row%2?G-1-i%G:i%G].ps.push(p.id)});
- groups.forEach(g=>{for(let i=0;i<g.ps.length;i++)for(let j=i+1;j<g.ps.length;j++)g.ms.push(mk(g.ps[i],g.ps[j]))});
- let qq=Math.max(1,Math.min(q,Math.min(...groups.map(g=>g.ps.length))-1));
- if(G*qq<2)qq=2;
- const refs=[];for(let pos=0;pos<qq;pos++)for(let g=0;g<G;g++)refs.push({g,pos});
- const K=ko(seeded(refs),true);K.t='Phase finale';
- const b={type:'po',name,level,q:qq,groups,secs:[K]};prop(b);return b;
-}
-function gen(){
- if(S.players.length<2)return alert('Il faut au moins 2 participants.');
- if(S.brackets&&!confirm('Régénérer efface tous les résultats. Continuer ?'))return;
- const f=S.format||'se',bld=(ps,n,l)=>f==='de'?buildDE(ps,n,l):f==='po'?buildPO(ps,n,l,S.size||4,S.q||2):buildSE(ps,n,l);
- if(S.mode==='level'){
-  S.brackets=LV.map(l=>({l,ps:S.players.filter(p=>p.l===l)})).filter(g=>g.ps.length>1).map(g=>bld(g.ps,g.l,g.l));
-  const alone=LV.filter(l=>S.players.filter(p=>p.l===l).length===1);
-  if(alone.length)alert('Un seul inscrit au niveau : '+alone.join(', ')+'. Pas de tableau pour eux ; passe en tableau unique ou change leur niveau.');
- }else S.brackets=[bld(S.players,'Tableau principal','all')];
- autoAssign();save();renderB();
-}
-function pick(k,id){
- const r=REG[k];if(!r||!pl(r.m.a)||!pl(r.m.b))return;
- const had=r.m.w;r.m.w=had===id?null:id;
- /* horodatage de la saisie : sert à rejouer les matchs dans l'ordre pour le classement ELO */
- if(r.m.w===null)delete r.m.t;else if(had===null||typeof r.m.t!=='number')r.m.t=Date.now();
- if(r.m.w!==null){delete r.m.tb;delete r.m.live}
- prop(r.b);autoAssign();save();renderB();
-}
-function mHtml(m,b,me,edit){
- const k=REG.push({m,b})-1,ok=pl(m.a)&&pl(m.b),path=me&&(m.a===me||m.b===me),now=path&&m.w===null&&ok;
- const row=id=>{const p=pl(id);
-  if(!p)return `<div class="pl bye">${id==='-'?'exempt':'à déterminer'}</div>`;
-  const c=['pl',m.w===id?'win':'',m.w&&m.w!==id?'lose':'',id===me?'me':''].join(' ');
-  return `<div class="${c}"${edit&&ok?` onclick="pick(${k},'${id}')"`:''}>${esc(p.p)} ${esc(p.n)}<small>${esc(p.l.slice(0,3))}</small></div>`};
- const ts=S.tables||[],open=ok&&m.w===null;let foot='';
- if(open&&edit&&ts.length)foot=`<div class="mt"><button class="${m.live?'on':''}" onclick="toggleLive(${k})" aria-pressed="${!!m.live}">${m.live?'● En cours':'Mettre en cours'}</button><select onchange="pickTable(${k},this.value)" aria-label="Table du match"><option value="">Table…</option>${ts.map(t=>`<option value="${t.id}"${m.tb===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select></div>`;
- else if(open&&edit)foot=`<div class="mt"><button class="${m.live?'on':''}" onclick="toggleLive(${k})" aria-pressed="${!!m.live}">${m.live?'● En cours':'Mettre en cours'}</button></div>`;
- else if(open&&(m.live||m.tb))foot=`<div class="mb"><em>${m.live?'En cours':''}</em><span>${m.tb&&tbName(m.tb)?esc(tbName(m.tb)):''}</span></div>`;
- return `<div class="match${path?' path':''}${now?' now':''}${open&&m.live?' live':''}">${row(m.a)}${row(m.b)}${foot}</div>`;
-}
-function cols(s,b,me,edit,node){
- return `<div class="scroll"><div class="bracket">${s.rounds.map((R,r)=>{
-  const nx=s.rounds[r+1],pair=nx&&nx.length*2===R.length,st=nx&&nx.length===R.length,pv=r>0&&s.rounds[r-1].length===R.length*2;
-  return `<div class="round"><h4>${s.titles[r]}</h4><div class="ms">${R.map((m,i)=>`<div class="slot">${pv?'<i class="d"></i>':''}${mHtml(m,b,me,edit)}${node&&node===m?BALL:''}${pair?`<i class="c ${i%2?'up':'dn'}"></i>`:st?'<i class="c st"></i>':''}</div>`).join('')}</div></div>`}).join('')}</div></div>`;
-}
-function bHtml(b,me,edit){
- const node=me&&!edit?lastNode(b,me):null;
- let h=`<div class="bname">${esc(b.name)}</div>`;
- if(b.type==='po')h+=`<div class="sname">Phase de poules</div><div class="groups">${b.groups.map((g,gi)=>{const st=stand(g);
-  return `<div class="grp"><h3>Poule ${String.fromCharCode(65+gi)}</h3><table>${st.rows.map((r,i)=>{const p=pl(r.id);
-   return `<tr class="${i<b.q&&st.done?'q':''}${r.id===me?' mine':''}"><td>${i+1}</td><td>${p?esc(p.p+' '+p.n):''}</td><td>${r.v} V</td><td>${r.d} D</td></tr>`}).join('')}</table><div class="gm">${g.ms.map(m=>mHtml(m,b,me,edit)).join('')}</div></div>`}).join('')}</div>`;
- return h+b.secs.map(s=>(s.t?`<div class="sname">${s.t}</div>`:'')+cols(s,b,me,edit,node)).join('');
-}
-function renderB(){
- REG.length=0;
- renderT();
- $('bO').innerHTML=S.brackets&&S.brackets.length?S.brackets.map(b=>bHtml(b,null,true)).join(''):'<div class="empty">Pas encore de tableau. Ajoute des participants puis clique sur « Générer le tableau ».</div>';
-}
-function fmtUI(){$('poOpts').classList.toggle('hide',(S.format||'se')!=='po')}
-
-/* ---------- joueur ---------- */
-function status(b,me){
- if(chmp(b)===me)return 'Tu as gagné le tournoi !';
- let pre='';
- if(b.type==='po'){
-  const gi=b.groups.findIndex(g=>g.ps.includes(me)),g=b.groups[gi],st=stand(g),pos=st.rows.findIndex(r=>r.id===me)+1,L='Poule '+String.fromCharCode(65+gi);
-  if(!st.done){
-   const open=g.ms.filter(m=>m.w===null&&(m.a===me||m.b===me)).map(m=>{const o=pl(m.a===me?m.b:m.a);return o.p+' '+o.n});
-   return `${L} : ${pos}e pour l’instant. Il te reste à jouer contre ${open.join(', ')}.`;
-  }
-  if(pos>b.q)return `Éliminé·e en ${L.toLowerCase()} (${pos}e). Merci d’avoir joué !`;
-  pre=`Qualifié·e (${pos}e de la ${L.toLowerCase()}). `;
- }
- let last=null;
- b.secs.forEach(s=>s.rounds.forEach((R,r)=>R.forEach(m=>{if(m.a===me||m.b===me)last={m,l:(s.t?s.t+' · ':'')+s.titles[r]}})));
- if(!last)return 'Ton tableau n’a pas encore commencé.';
- const {m,l}=last;
- if(m.w===null){const o=pl(m.a===me?m.b:m.a),tn=m.tb?tbName(m.tb):'',tt=tn?` Rendez-vous à la ${tn}.`:'';return pre+(o?`${l} : ton adversaire est ${o.p} ${o.n}.${tt}`:`${l} : adversaire pas encore connu.`)}
- if(m.w===me)return pre+'Tu avances ! Adversaire pas encore connu.';
- return `Éliminé·e (${l}). Merci d’avoir joué !`;
-}
-let searched=false;
-async function findMe(auto){
- await pull();searched=true;
- const q=norm($('jp').value+' '+$('jn').value).split(/\s+/).filter(Boolean).sort().join(' ');
- const p=S.players.find(p=>norm(p.p+' '+p.n).split(/\s+/).filter(Boolean).sort().join(' ')===q);
- const out=$('me');
- if(!S.brackets||!S.brackets.length){out.innerHTML='<div class="empty">Le tournoi n’est pas encore publié. Reviens un peu plus tard.</div>';return}
- if(!p){out.innerHTML='<div class="empty">Aucun inscrit à ce nom. Vérifie l’orthographe du prénom et du nom saisis sur HelloAsso.</div>';return}
- const b=S.brackets.find(b=>b.type==='po'?b.groups.some(g=>g.ps.includes(p.id)):b.secs[0].rounds[0].some(m=>m.a===p.id||m.b===p.id));
- if(!b){out.innerHTML='<div class="empty">Tu es inscrit·e mais pas dans un tableau. Vois avec l’organisateur.</div>';return}
- out.innerHTML=`<div class="status">${esc(status(b,p.id))}</div><p class="hint">${esc(p.p)} ${esc(p.n)} · niveau ${esc(p.l)}. Ton chemin est entouré en rouge.</p>`+bHtml(b,p.id,false);
- const n=out.querySelector('.now');if(n&&auto!==true)n.scrollIntoView({block:'center',inline:'center'});
-}
-
-/* ---------- publication instantanée (Netlify Function) ---------- */
-const API='/api/tournoi';
-const ORGA=new URLSearchParams(location.search).get('vue')==='orga';
-let GH={token:'',auto:false},ghTimer,ghBusy=false,ghDirty=false;
-try{Object.assign(GH,JSON.parse(localStorage.getItem('poolnight_gh')))}catch(e){}
-const ghStatus=t=>{$('ghs').textContent=t};
-function ghFill(){$('ghT').value=GH.token||'';$('ghA').checked=GH.auto;ghStatus(GH.auto?'Publication automatique activée.':'Publication désactivée.')}
-function ghSave(){
- GH={token:$('ghT').value.trim(),auto:$('ghA').checked};
- try{localStorage.setItem('poolnight_gh',JSON.stringify(GH))}catch(e){}
-}
-async function publish(force){
- if(!force&&!GH.auto)return;
- if(!GH.token)return force&&ghStatus('Renseigne la clé organisateur.');
- if(!S.brackets)return force&&ghStatus('Génère d’abord un tableau.');
- if(ghBusy){ghDirty=true;return}
- ghBusy=true;ghStatus('Publication en cours…');
+/* ---------- espace organisateur ---------- */
+async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function login(ev){
+ ev.preventDefault();
  try{
-  const r=await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json','x-organizer-key':GH.token},body:JSON.stringify(S)});
-  if(!r.ok)throw new Error(r.status===403?'clé refusée':'code '+r.status);
-  ghStatus('Publié à '+new Date().toLocaleTimeString('fr-FR')+' : visible tout de suite par les joueurs.');
- }catch(e){ghStatus('Échec de la publication ('+e.message+').')}
- ghBusy=false;if(ghDirty){ghDirty=false;publish()}
+  if(await sha($('pw').value)===ORGA_HASH){try{sessionStorage.setItem('pn_orga','1')}catch(e){}$('pw').value='';$('lerr').textContent='';show()}
+  else $('lerr').textContent='Mot de passe incorrect.';
+ }catch(e){$('lerr').textContent='Connexion impossible : ouvre le site en https (ou en local avec un serveur).'}
 }
-/* récupère la dernière version côté joueur */
-async function pull(){
- if(ORGA)return false;
+function logout(){try{sessionStorage.removeItem('pn_orga')}catch(e){}show()}
+const st=t=>{const s=$('ost');if(s)s.textContent=t};
+function touch(){
+ dirty=true;st('Modifications non publiées.');clearTimeout(pubTimer);
+ if(auto&&okey())pubTimer=setTimeout(publish,1500);
+}
+const ev=id=>D.events.find(e=>e.id===id);
+function evSet(id,k,v){ev(id)[k]=v;touch();renderEvents()}
+function evAdd(){D.events.push({id:'e'+Date.now(),d:iso(new Date()),t:'Nouvel évènement',l:'',x:'',img:''});touch();renderEvents();renderOrga()}
+function evDel(id){if(confirm('Supprimer cet évènement ?')){D.events=D.events.filter(e=>e.id!==id);touch();renderEvents();renderOrga()}}
+function evMove(id){const e=ev(id);e.p=isPast(e)?'up':'past';touch();renderEvents();renderOrga()}
+const autoSave=v=>{auto=v;try{localStorage.setItem('pn_auto',v?'1':'0')}catch(e){}};
+async function apiOrga(path,method,body,type){
+ const k=okey();if(!k)throw new Error('saisis la clé organisateur');
+ let r;try{r=await fetch(API+path,{method,headers:Object.assign({'x-organizer-key':k},type?{'content-type':type}:{}),body})}catch(e){throw new Error('serveur injoignable')}
+ if(r.status===401||r.status===403)throw new Error('clé organisateur incorrecte');
+ if(r.status===429)throw new Error('trop d’essais, réessaie dans une heure');
+ if(!r.ok)throw new Error('code '+r.status);return r}
+async function checkKey(){
+ const m=$('kmsg');m.textContent='Vérification…';
+ try{await apiOrga('/api/tournoi','POST');m.textContent='Clé valide.'}catch(e){m.textContent='Échec : '+e.message+'.'}}
+async function publish(){
+ if(pubBusy){pubAgain=true;return}
+ pubBusy=true;st('Publication en cours…');
+ try{await apiOrga('/api/donnees','PUT',JSON.stringify(D),'application/json');dirty=false;st('Publié à '+new Date().toLocaleTimeString('fr-FR')+'. Visible tout de suite.')}
+ catch(e){st('Échec de la publication ('+e.message+').')}
+ pubBusy=false;if(pubAgain){pubAgain=false;publish()}
+}
+async function upImg(id,input){
+ const f=input.files[0];if(!f)return;
  try{
-  let r=await fetch(API,{cache:'no-store'}),d=r.ok?await r.json():null;
-  if(!d){r=await fetch('tournoi.json?'+Date.now(),{cache:'no-store'});if(r.ok)d=await r.json()}
-  if(d){S=d;clean();return true}
+  st('Téléversement de l’affiche…');
+  const bm=await createImageBitmap(f),s=Math.min(1,900/bm.width),c=document.createElement('canvas');
+  c.width=Math.round(bm.width*s);c.height=Math.round(bm.height*s);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+  const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.85));
+  const name='ev-'+Date.now()+'.jpg';
+  await apiOrga('/api/affiche/'+name,'PUT',blob,'image/jpeg');
+  evSet(id,'img','/api/affiche/'+name);renderOrga();st('Affiche téléversée. Pense à publier pour l’associer à l’évènement.');
+ }catch(e){st('Échec du téléversement ('+e.message+').')}
+}
+function exportData(){
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,1)],{type:'application/json'}));a.download='data.json';a.click();
+}
+function addResult(t){
+ let r;try{r=extractTournoi(t)}catch(e){return alert(e.message)}
+ if(!r.matches.length)return alert('Aucun match joué dans ce tournoi.');
+ if(r.open&&!confirm(r.open+' tableau(x) sans vainqueur (tournoi non terminé ?). Importer quand même ?'))return;
+ const name=$('rn').value.trim()||'Tournoi',date=$('rd').value||iso(new Date()),id=name+'|'+date;
+ D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,matches:r.matches,champs:r.champs});
+ touch();renderBoard();renderOrga();
+}
+function importFile(i){const f=i.files[0];if(f)f.text().then(x=>addResult(JSON.parse(x))).catch(()=>alert('Fichier illisible.'))}
+async function importRemote(){
+ try{const r=await fetch(API+'/api/tournoi',{cache:'no-store'});const j=r.ok?await r.json():null;if(j){addResult(j);return}}catch(e){}
+ alert('Aucun tournoi publié sur la page tournois (ou lecture impossible). Génère un tableau depuis l’onglet Tournois, ou charge tournoi.json avec « Importer un fichier ».');
+}
+function resDel(i){if(confirm('Retirer ce tournoi du classement ?')){D.results.splice(i,1);touch();renderBoard();renderOrga()}}
+async function makeHash(){try{$('hout').textContent=await sha($('npw').value)}catch(e){$('hout').textContent='Indisponible hors https.'}}
+function renderOrga(){
+ const e2=e=>{const p=isPast(e);return `<div class="oe"><div class="row"><input type="date" value="${esc(e.d)}" oninput="evSet('${e.id}','d',this.value)" aria-label="Date"><input value="${esc(e.t)}" placeholder="Titre" oninput="evSet('${e.id}','t',this.value)" aria-label="Titre"><input value="${esc(e.l)}" placeholder="Lieu" oninput="evSet('${e.id}','l',this.value)" aria-label="Lieu"></div>
+<textarea placeholder="Description" oninput="evSet('${e.id}','x',this.value)" aria-label="Description">${esc(e.x)}</textarea>
+<div class="row"><input value="${esc(e.img||'')}" placeholder="assets/affiche.jpg" oninput="evSet('${e.id}','img',this.value)" aria-label="Chemin de l’affiche"><label class="btn alt sm">Téléverser une affiche<input type="file" accept="image/*" hidden onchange="upImg('${e.id}',this)"></label></div>
+<div class="row"><span class="tag ${p?'p':'u'}">${p?'Passé':'À venir'}</span><button class="btn alt sm" onclick="evMove('${e.id}')">${p?'Remettre à venir':'Passer en évènement passé'}</button><button class="btn sm" onclick="evDel('${e.id}')">Supprimer</button></div></div>`};
+ $('orga').innerHTML=`<div class="frame"><h3 class="oh">Clé organisateur</h3><p class="st">Nécessaire pour publier, téléverser une affiche et corriger les défis. C’est la même clé que celle de l’onglet Tournois. Elle reste seulement dans cet onglet du navigateur.</p><div class="row"><input id="okey" type="password" value="${esc(ss('pn_okey')||'')}" placeholder="Clé organisateur" autocomplete="off" aria-label="Clé organisateur" onchange="okey()"><button class="btn alt sm" onclick="okey();checkKey()">Vérifier la clé</button></div><p class="st" id="kmsg" role="status"></p></div>
+<div class="frame"><h3 class="oh">Évènements</h3><button class="btn" onclick="evAdd()">Ajouter un évènement</button>${[...D.events].sort((a,b)=>day(b.d)-day(a.d)).map(e2).join('')}</div>
+<div class="frame"><h3 class="oh">Classement</h3><p class="st">Après chaque tournoi, exporte tournoi.json depuis la page tournois, puis importe-le ici. Chaque match joué met à jour l’ELO des deux joueurs (les byes ne comptent pas). L’ordre des matchs est celui de la saisie des résultats, ou à défaut l’ordre logique des tours. Pour corriger un résultat, corrige-le dans la page tournois puis réimporte le fichier avec le même nom et la même date.</p>
+<div class="row"><input id="rn" placeholder="Nom du tournoi" aria-label="Nom du tournoi"><input id="rd" type="date" value="${iso(new Date())}" aria-label="Date du tournoi"></div>
+<div class="row"><label class="btn alt sm">Importer un fichier<input type="file" accept=".json" hidden onchange="importFile(this)"></label><button class="btn alt sm" onclick="importRemote()">Importer depuis le site tournois</button></div>
+${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).toLocaleDateString('fr-FR')} · ${t.matches?t.matches.length+' matchs':'ancien format, non compté'}</span><button class="btn sm" onclick="resDel(${i})">Retirer</button></div>`).join('')||'<p class="st">Aucun tournoi importé.</p>'}</div>
+${orgaDefis()}<div class="frame"><h3 class="oh">Publication</h3><p class="st">Les évènements et résultats publiés sont visibles tout de suite par tout le monde (aucun déploiement nécessaire).</p>
+<div class="row"><label><input type="checkbox" id="ga"${auto?' checked':''} onchange="autoSave(this.checked)"> Publier automatiquement</label></div>
+<div class="row"><button class="btn" onclick="okey();publish()">Publier</button><button class="btn alt sm" onclick="exportData()">Exporter data.json</button></div>
+<p class="st" id="ost" role="status">${dirty?'Modifications non publiées.':''}</p></div>
+<div class="frame"><h3 class="oh">Mot de passe</h3><p class="st">Saisis un nouveau mot de passe, copie l’empreinte obtenue dans la constante ORGA_HASH de poolnight.html, puis republie le site.</p>
+<div class="row"><input id="npw" type="text" placeholder="Nouveau mot de passe" aria-label="Nouveau mot de passe"><button class="btn alt sm" onclick="makeHash()">Générer l’empreinte</button></div><code class="mono" id="hout"></code>
+<div class="row"><button class="btn sm" onclick="logout()">Se déconnecter</button></div></div>`;
+}
+
+/* queue de billard sous l'onglet actif : au changement d'onglet, elle pousse la boule jusqu'au nouvel onglet */
+const cueEl=$('cue'),ballEl=$('ball'),ballIn=ballEl.firstElementChild,CD=12,CT=8;
+let cueTab=null,cueF=1,cueRun=0,cueAnims=[];
+const calm=matchMedia('(prefers-reduced-motion:reduce)'),sleep=ms=>new Promise(f=>setTimeout(f,ms));
+function cueRest(a,f){const L=a.offsetLeft,W=a.offsetWidth,sw=Math.max(20,W-12-CD),y=a.offsetTop+a.offsetHeight-4;
+ return f>0?{sl:L+6,sw,bl:L+6+sw,y}:{bl:L+6,sl:L+6+CD,sw,y}}
+function cueApply(r,f){cueEl.style.cssText=`left:${r.sl}px;top:${r.y}px;width:${r.sw}px;transform:scaleX(${f})`;ballEl.style.cssText=`left:${r.bl}px;top:${r.y-(CD-CT)/2}px`;ballIn.style.transform=''}
+function cueAnim(el,kf,ms,ease,delay){const an=el.animate(kf,{duration:ms,easing:ease,delay:delay||0,fill:'forwards'});cueAnims.push(an);return an.finished}
+async function moveCue(a){
+ const my=++cueRun;
+ cueAnims.forEach(x=>x.cancel());cueAnims=[];
+ if(!a){cueEl.classList.add('off');ballEl.classList.add('off');cueTab=null;return}
+ const prev=cueTab,off=cueEl.classList.contains('off');
+ if(prev&&!off)cueApply(cueRest(prev,cueF),cueF);   /* si une animation était en cours : on la termine d'un coup */
+ const dir=prev?(Math.sign(a.offsetLeft-prev.offsetLeft)||1):1;
+ if(!prev||off||a===prev||calm.matches){cueTab=a;cueApply(cueRest(a,cueF),cueF);cueEl.classList.remove('off');ballEl.classList.remove('off');return}
+ const live=()=>my===cueRun;
+ let f=cueF,r0=cueRest(prev,f);
+ cueTab=a;
+ try{
+  if(f!==dir){   /* la queue se retourne côté sens de marche */
+   cueEl.classList.add('off');ballEl.classList.add('off');await sleep(210);if(!live())return;
+   f=dir;r0=cueRest(prev,f);cueApply(r0,f);cueEl.classList.remove('off');ballEl.classList.remove('off');await sleep(210);if(!live())return}
+  cueF=f;
+  const to=cueRest(a,f),S=(o,dx)=>({left:(o.sl+(dx||0))+'px',width:o.sw+'px',top:o.y+'px'});
+  await cueAnim(cueEl,[S(r0),S(r0,-12*f)],190,'ease-out');if(!live())return;      /* la queue recule */
+  await cueAnim(cueEl,[S(r0,-12*f),S(r0)],90,'ease-in');if(!live())return;       /* coup */
+  const dist=to.bl-r0.bl,deg=dist/(Math.PI*CD)*360;
+  await Promise.all([
+   cueAnim(ballEl,[{left:r0.bl+'px',top:(r0.y-2)+'px'},{left:to.bl+'px',top:(to.y-2)+'px'}],640,'cubic-bezier(.1,.8,.2,1)'),
+   cueAnim(ballIn,[{transform:'rotate(0deg)'},{transform:`rotate(${deg}deg)`}],640,'cubic-bezier(.1,.8,.2,1)'),
+   cueAnim(cueEl,[S(r0),S(to)],820,'cubic-bezier(.25,.6,.3,1)')]);
+  if(!live())return;
+  cueApply(to,f);cueAnims.forEach(x=>x.cancel());cueAnims=[];
  }catch(e){}
- return false;
 }
-/* ---------- divers ---------- */
-function exportJson(){
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
- a.download='tournoi.json';a.click();
+addEventListener('resize',()=>{if(cueTab)moveCue(cueTab)});
+if(document.fonts)document.fonts.ready.then(()=>{if(cueTab)moveCue(cueTab)});
+const TABS=['presentation','bureau','tournois','evenements','classement','organisateur'];
+function show(){
+ const [h,q]=location.hash.slice(1).split('?'),t=TABS.includes(h)?h:'presentation';
+ if(q){const pr=new URLSearchParams(q),id=pr.get('defi'),k=pr.get('k');if(/^[a-f0-9]{12}$/.test(id||'')&&/^[a-f0-9]{24}$/.test(k||''))DP={id,k}}
+ else if(DP){DP=null;$('defi').hidden=true}
+ TABS.forEach(n=>{$('p-'+n).hidden=n!==t;const a=$('t-'+n);if(a)n===t?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+ moveCue($('t-'+t));
+ if(t==='tournois'){const f=$('ftour'),src='tournois.html?embed=1'+(new URLSearchParams(q||'').get('vue')==='orga'?'&vue=orga':'');if(f.getAttribute('src')!==src)f.src=src}
+ if(DP)defiCheck();
+ if(t==='organisateur'){const ok=ss('pn_orga')==='1';$('login').hidden=ok;$('orga').hidden=!ok;if(ok)renderOrga()}
 }
-function resetAll(){if(confirm('Effacer participants et tableau ?')){S={players:[],brackets:null,mode:'level',tables:(S.tables||[]).map(t=>({...t}))};save();renderP()}}
-function show(v){
- $('vO').classList.toggle('hide',v!=='org');$('vP').classList.toggle('hide',v!=='pl');
- $('tO').classList.toggle('on',v==='org');$('tP').classList.toggle('on',v==='pl');
-}
-/* true = clé valide, false = refusée, null = serveur injoignable */
-async function verifyKey(k){
- try{return (await fetch(API,{method:'POST',headers:{'x-organizer-key':k}})).ok}catch(e){return null}
-}
-async function go(v){
- if(v==='org'){
-  let ok=GH.token?await verifyKey(GH.token):false;
-  if(ok===null)ok=true; /* hors ligne : on garde la clé déjà enregistrée */
-  if(!ok){
-   const k=(prompt('Code organisateur')||'').trim();
-   if(!k||(await verifyKey(k))!==true){
-    if(k)alert('Code refusé.');
-    if($('vO').classList.contains('hide')&&$('vP').classList.contains('hide'))show('pl');
-    return;
-   }
-   GH.token=k;try{localStorage.setItem('poolnight_gh',JSON.stringify(GH))}catch(e){}
-   ghFill();
-  }
- }
- show(v);
-}
-function qr(){
- const u=location.href.split('#')[0].split('?')[0];
- $('qrurl').textContent=u;$('qr').innerHTML='';
- try{new QRCode($('qr'),{text:u,width:160,height:160})}catch(e){}
-}
+addEventListener('hashchange',show);
+addEventListener('message',e=>{const f=$('ftour');if(f&&e.source===f.contentWindow&&e.data&&typeof e.data.pnH==='number')f.style.height=Math.max(300,e.data.pnH)+'px'});
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+renderEvents();renderBoard();show();loadDefis();
 (async()=>{
- if(ORGA)go('org');
- else{
-  await pull();
-  document.querySelector('nav').classList.add('hide');go('pl');
- }
- renderP();qr();ghFill();
- if(!ORGA)setInterval(()=>{if(searched&&!document.hidden)findMe(true)},20000);
+ let j=null;
+ try{const r=await fetch(API+'/api/donnees?'+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json()}catch(e){}
+ if(!j||!Array.isArray(j.events)){try{const r=await fetch(DATA_PATH+'?'+Date.now());if(r.ok)j=await r.json()}catch(e){}}   /* repli : data.json du dépôt */
+ if(j&&Array.isArray(j.events)&&!dirty){D={events:j.events,results:j.results||[]};renderEvents();renderBoard();if(location.hash==='#organisateur'&&ss('pn_orga')==='1')renderOrga()}
 })();
+const v=document.querySelector('video');
+if(v&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.pause();v.removeAttribute('autoplay')}
 </script>
 </body>
 </html>
