@@ -96,7 +96,7 @@ export async function handle(req, store, env, now = Date.now()) {
 
 export default async (req) => {
   const { getStore } = await import('@netlify/blobs');
-  return handle(req, getStore('defis'), process.env);
+  return handle(req, getStore({ name: 'defis', consistency: 'strong' }), process.env);
 };
 
 export const config = { path: '/api/defis' };
