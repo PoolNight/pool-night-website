@@ -32,8 +32,13 @@ td input,td select{width:100%}
 .hint{font-size:.85rem;opacity:.75;margin:.3rem 0}
 .empty{padding:1rem;border:2px dashed var(--line);border-radius:8px;text-align:center}
 .bname{font:400 1.25rem Anton,sans-serif;color:var(--red);margin:1rem 0 .4rem}
-.scroll{overflow-x:auto;padding-bottom:.6rem}
-.bracket{display:flex;gap:1.4rem;min-width:max-content}
+.scroll{overflow-x:auto;padding-bottom:.6rem;touch-action:pan-x pan-y}
+.bracket{display:flex;gap:1.4rem;min-width:max-content;zoom:var(--z,1)}
+.bname{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap}
+.zc{display:inline-flex;align-items:center;gap:.3rem;font-family:"DM Sans",system-ui,sans-serif;font-size:.85rem;font-weight:700;color:var(--ink)}
+.zc button{border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;min-width:2.1rem;height:2.1rem;padding:0 .55rem;font-weight:700;font-size:1rem;font-family:inherit;cursor:pointer}
+.zc .zf{font-size:.8rem}
+.zp{min-width:3.2ch;text-align:center}
 .round{display:flex;flex-direction:column;min-width:190px}
 .ms{flex:1;display:flex;flex-direction:column}
 .slot{flex:1;display:flex;align-items:center;position:relative;padding:.3rem 0}
@@ -159,13 +164,13 @@ html.emb main{padding-top:0}
 
 <div class="polaroid">
 <h2>Publication instantanée</h2>
-<p class="hint">À chaque résultat saisi, le tournoi est envoyé au serveur Netlify : les joueurs le voient dès qu’ils actualisent (sans attendre de déploiement). La clé reste uniquement dans ce navigateur.</p>
+<p class="hint">À chaque modification, le tournoi est envoyé au serveur Netlify : les autres organisateurs la voient en quelques secondes (sans recharger la page) et les joueurs dès qu’ils actualisent. Plusieurs organisateurs peuvent travailler en même temps. La clé reste uniquement dans ce navigateur.</p>
 <div class="row">
 <input id="ghT" type="password" placeholder="Clé organisateur" aria-label="Clé organisateur" style="min-width:260px">
-<label><input type="checkbox" id="ghA"> Publier automatiquement</label>
+<label><input type="checkbox" id="ghA"> Synchronisation en direct (plusieurs organisateurs)</label>
 <button class="b alt" onclick="ghSave();publish(true)">Enregistrer et publier maintenant</button>
 </div>
-<p class="hint" id="ghs">Publication désactivée.</p>
+<p class="hint" id="ghs">Synchronisation en attente de la clé organisateur.</p>
 </div>
 
 <div class="polaroid">
@@ -198,7 +203,7 @@ const rank=l=>{const i=LV.findIndex(x=>norm(x).slice(0,3)===norm(l).slice(0,3));
 let S={players:[],brackets:null,mode:'level'};
 try{const x=JSON.parse(localStorage.getItem('poolnight'));if(x)S=x}catch(e){}
 const clean=()=>{if(S.brackets&&S.brackets.some(b=>!b.secs))S.brackets=null};clean();
-const save=()=>{try{localStorage.setItem('poolnight',JSON.stringify(S))}catch(e){}clearTimeout(ghTimer);ghTimer=setTimeout(()=>publish(),1500)};
+const save=()=>{try{localStorage.setItem('poolnight',JSON.stringify(S))}catch(e){}clearTimeout(ghTimer);ghTimer=setTimeout(()=>publish(),600)};
 const pl=id=>S.players.find(p=>p.id===id);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -449,6 +454,32 @@ function mHtml(m,b,me,edit){
  else if(open&&(m.live||m.tb))foot=`<div class="mb"><em>${m.live?'En cours':''}</em><span>${m.tb&&tbName(m.tb)?esc(tbName(m.tb)):''}</span></div>`;
  return `<div class="match${path?' path':''}${now?' now':''}${open&&m.live?' live':''}">${row(m.a)}${row(m.b)}${foot}</div>`;
 }
+/* ---------- zoom des tableaux (boutons, pincement, Ctrl + molette) ---------- */
+let Z=1;try{Z=parseFloat(localStorage.getItem('pn_zoom'))||1}catch(e){}
+const ZMIN=.3,ZMAX=1.6;
+function setZ(z,save){
+ const old=Z;Z=Math.min(ZMAX,Math.max(ZMIN,z));
+ const sc=[...document.querySelectorAll('.scroll')],mid=sc.map(e=>e.scrollLeft+e.clientWidth/2);
+ document.documentElement.style.setProperty('--z',Z);
+ sc.forEach((e,i)=>{e.scrollLeft=mid[i]*(Z/old)-e.clientWidth/2});   /* garde le même centre */
+ document.querySelectorAll('.zp').forEach(e=>e.textContent=Math.round(Z*100)+'%');
+ if(save)try{localStorage.setItem('pn_zoom',String(Z))}catch(e){}
+}
+function zoomBy(d){setZ(Z*(d>0?1.2:1/1.2),true)}
+function zoomFit(){
+ const bs=[...document.querySelectorAll('.bracket')];if(!bs.length)return;
+ setZ(1);
+ const w=Math.max(...bs.map(b=>b.scrollWidth)),a=Math.min(...[...document.querySelectorAll('.scroll')].map(e=>e.clientWidth));
+ setZ(Math.min(1,a/w*.99),true);
+}
+setZ(Z);
+(()=>{
+ const d=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);let p0=0,z0=1;
+ document.addEventListener('touchstart',e=>{if(e.touches.length===2&&e.target.closest('.scroll')){p0=d(e.touches);z0=Z}},{passive:true});
+ document.addEventListener('touchmove',e=>{if(p0&&e.touches.length===2){e.preventDefault();setZ(z0*d(e.touches)/p0)}},{passive:false});
+ document.addEventListener('touchend',e=>{if(p0&&e.touches.length<2){p0=0;try{localStorage.setItem('pn_zoom',String(Z))}catch(x){}}});
+ document.addEventListener('wheel',e=>{if((e.ctrlKey||e.metaKey)&&e.target.closest('.scroll')){e.preventDefault();setZ(Z*(e.deltaY<0?1.1:1/1.1),true)}},{passive:false});
+})();
 function cols(s,b,me,edit,node){
  return `<div class="scroll"><div class="bracket">${s.rounds.map((R,r)=>{
   const nx=s.rounds[r+1],pair=nx&&nx.length*2===R.length,st=nx&&nx.length===R.length,pv=r>0&&s.rounds[r-1].length===R.length*2;
@@ -456,7 +487,7 @@ function cols(s,b,me,edit,node){
 }
 function bHtml(b,me,edit){
  const node=me&&!edit?lastNode(b,me):null;
- let h=`<div class="bname">${esc(b.name)}</div>`;
+ let h=`<div class="bname"><span>${esc(b.name)}</span><span class="zc" role="group" aria-label="Zoom du tableau"><button type="button" onclick="zoomBy(-1)" aria-label="Dézoomer">−</button><span class="zp">${Math.round(Z*100)}%</span><button type="button" onclick="zoomBy(1)" aria-label="Zoomer">+</button><button type="button" class="zf" onclick="zoomFit()" title="Tout voir à l’écran">Ajuster</button></span></div>`;
  if(b.type==='po')h+=`<div class="sname">Phase de poules</div><div class="groups">${b.groups.map((g,gi)=>{const st=stand(g);
   return `<div class="grp"><h3>Poule ${String.fromCharCode(65+gi)}</h3><table>${st.rows.map((r,i)=>{const p=pl(r.id);
    return `<tr class="${i<b.q&&st.done?'q':''}${r.id===me?' mine':''}"><td>${i+1}</td><td>${p?esc(p.p+' '+p.n):''}</td><td>${r.v} V</td><td>${r.d} D</td></tr>`}).join('')}</table><div class="gm">${g.ms.map(m=>mHtml(m,b,me,edit)).join('')}</div></div>`}).join('')}</div>`;
@@ -507,26 +538,95 @@ async function findMe(auto){
 /* ---------- publication instantanée (Netlify Function) ---------- */
 const API='/api/tournoi';
 const ORGA=new URLSearchParams(location.search).get('vue')==='orga';
-let GH={token:'',auto:false},ghTimer,ghBusy=false,ghDirty=false;
+let GH={token:'',auto:true},ghTimer,ghBusy=false,ghDirty=false,keyBad=false;
 try{Object.assign(GH,JSON.parse(localStorage.getItem('poolnight_gh')))}catch(e){}
+try{if(!localStorage.getItem('poolnight_sync2')){GH.auto=true;localStorage.setItem('poolnight_sync2','1');localStorage.setItem('poolnight_gh',JSON.stringify(GH))}}catch(e){}
 const ghStatus=t=>{$('ghs').textContent=t};
-function ghFill(){$('ghT').value=GH.token||'';$('ghA').checked=GH.auto;ghStatus(GH.auto?'Publication automatique activée.':'Publication désactivée.')}
+function ghFill(){$('ghT').value=GH.token||'';$('ghA').checked=GH.auto;ghStatus(GH.auto?'Synchronisation en direct activée.':'Synchronisation désactivée : tes modifications restent sur cet appareil.')}
 function ghSave(){
  GH={token:$('ghT').value.trim(),auto:$('ghA').checked};
+ keyBad=false;
  try{localStorage.setItem('poolnight_gh',JSON.stringify(GH))}catch(e){}
+}
+/* ---------- plusieurs organisateurs : synchronisation en direct ---------- */
+let REV=0,BASE=null;   /* REV : version en ligne que je connais ; BASE : cette version (texte JSON) */
+try{REV=+localStorage.getItem('poolnight_rev')||0;BASE=localStorage.getItem('poolnight_base')}catch(e){}
+const isDirty=()=>BASE===null||JSON.stringify(S)!==BASE;
+function markSynced(body,rev){REV=rev;BASE=body;try{localStorage.setItem('poolnight_rev',String(rev));localStorage.setItem('poolnight_base',body)}catch(e){}}
+/* fusion à trois : base (dernière version synchronisée), mine (mes changements), theirs (version en ligne) */
+function merge3(b,m,t){
+ const J=JSON.stringify,isO=x=>x&&typeof x==='object'&&!Array.isArray(x);
+ if(J(m)===J(b))return t;
+ if(J(t)===J(b)||J(m)===J(t))return m;
+ if(isO(m)&&isO(t)){
+  const bb=isO(b)?b:{},o={};
+  new Set([...Object.keys(m),...Object.keys(t)]).forEach(k=>{const v=merge3(bb[k],m[k],t[k]);if(v!==undefined)o[k]=v});
+  return o;
+ }
+ if(Array.isArray(m)&&Array.isArray(t)){
+  const bb=Array.isArray(b)?b:[],keyed=a=>a.every(x=>x&&typeof x==='object'&&x.id!==undefined);
+  if(keyed(m)&&keyed(t)&&keyed(bb)){
+   const mp=a=>new Map(a.map(x=>[x.id,x])),B=mp(bb),M=mp(m),T=mp(t),out=[];
+   t.forEach(x=>{
+    if(M.has(x.id))out.push(merge3(B.get(x.id),M.get(x.id),x));
+    else if(!B.has(x.id)||J(x)!==J(B.get(x.id)))out.push(x);   /* ajouté ou modifié par l'autre */
+   });
+   m.forEach(x=>{if(!T.has(x.id)&&(!B.has(x.id)||J(x)!==J(B.get(x.id))))out.push(x)});   /* ajouté ou modifié par moi */
+   return out;
+  }
+  if(m.length===t.length&&m.length===bb.length)return m.map((x,i)=>merge3(bb[i],x,t[i]));
+  return t;   /* structure différente (tableau régénéré…) : la version en ligne l'emporte */
+ }
+ return m;     /* même case modifiée des deux côtés : la mienne, la plus récente */
+}
+/* applique la version en ligne (d) : tel quel si je n'ai rien en attente, sinon fusion */
+function applyRemote(d){
+ const rev=d._rev||0;delete d._rev;
+ if(!isDirty()){S=d;clean();markSynced(JSON.stringify(S),rev);return}
+ const base=BASE?JSON.parse(BASE):{players:[],brackets:null,mode:'level'};
+ S=merge3(base,S,d);clean();
+ (S.brackets||[]).forEach(prop);autoAssign();
+ markSynced(JSON.stringify(d),rev);   /* la différence entre S et cette version sera publiée */
+ try{localStorage.setItem('poolnight',JSON.stringify(S))}catch(e){}
 }
 async function publish(force){
  if(!force&&!GH.auto)return;
  if(!GH.token)return force&&ghStatus('Renseigne la clé organisateur.');
- if(!S.brackets)return force&&ghStatus('Génère d’abord un tableau.');
  if(ghBusy){ghDirty=true;return}
- ghBusy=true;ghStatus('Publication en cours…');
+ ghBusy=true;ghStatus('Synchronisation…');
  try{
-  const r=await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json','x-organizer-key':GH.token},body:JSON.stringify(S)});
-  if(!r.ok)throw new Error(r.status===403?'clé refusée':'code '+r.status);
-  ghStatus('Publié à '+new Date().toLocaleTimeString('fr-FR')+' : visible tout de suite par les joueurs.');
- }catch(e){ghStatus('Échec de la publication ('+e.message+').')}
+  const body=JSON.stringify(S);
+  const r=await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json','x-organizer-key':GH.token,'x-base-rev':String(REV)},body});
+  if(r.status===409){
+   applyRemote(await r.json());renderP();ghDirty=true;
+   ghStatus('Fusionné avec les modifications d’un autre organisateur ('+new Date().toLocaleTimeString('fr-FR')+').');
+  }else if(!r.ok){keyBad=r.status===403||r.status===429;throw new Error(r.status===403?'clé refusée':r.status===429?'trop d’essais, réessaie dans une heure':'code '+r.status)}
+  else{markSynced(body,(await r.json()).rev);keyBad=false;ghStatus('Synchronisé à '+new Date().toLocaleTimeString('fr-FR')+' : visible tout de suite par les autres organisateurs et les joueurs.')}
+ }catch(e){ghStatus('Échec de la synchronisation ('+e.message+').')}
  ghBusy=false;if(ghDirty){ghDirty=false;publish()}
+}
+/* organisateur : au démarrage, on part de la version en ligne ; ensuite, sondage toutes les 3 secondes */
+async function orgaStart(){
+ try{
+  const r=await fetch(API,{cache:'no-store'}),d=r.ok?await r.json():null;
+  if(d)applyRemote(d);
+  else if(S.players.length||S.brackets)publish();   /* rien en ligne : on envoie ce qu'on a */
+ }catch(e){}
+ renderP();
+ setInterval(orgaTick,3000);
+}
+async function orgaTick(){
+ if(document.hidden||ghBusy)return;
+ const a=document.activeElement;
+ if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.closest('#vO'))return;   /* ne rien changer pendant qu'on écrit */
+ if(isDirty()&&GH.auto&&GH.token&&!keyBad){publish();return}
+ try{
+  const r=await fetch(API+'?since='+REV,{cache:'no-store'});if(!r.ok)return;
+  const d=await r.json();if(!d||d.same||(d._rev||0)===REV)return;
+  applyRemote(d);renderP();
+  ghStatus('Mis à jour à '+new Date().toLocaleTimeString('fr-FR')+' (modification d’un autre organisateur).');
+  if(isDirty())publish();
+ }catch(e){}
 }
 /* récupère la dernière version côté joueur */
 async function pull(){
@@ -575,7 +675,7 @@ function qr(){
  try{new QRCode($('qr'),{text:u,width:160,height:160})}catch(e){}
 }
 (async()=>{
- if(ORGA)go('org');
+ if(ORGA){await go('org');if(!$('vO').classList.contains('hide'))await orgaStart()}
  else{
   await pull();
   document.querySelector('nav').classList.add('hide');go('pl');

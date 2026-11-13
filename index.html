@@ -83,6 +83,14 @@ main{max-width:1000px;margin:auto;padding:2rem 1rem 3rem}
 .ev h3{font:400 1.3rem Anton,sans-serif;letter-spacing:.05em;text-transform:uppercase;margin:0 3.6rem .2rem 0}
 .ev p{margin:.2rem 0;font-size:.95rem}.ev .lieu{font-style:italic;opacity:.8}
 .ev.past img{filter:grayscale(.55) sepia(.3)}
+.ev img{transition:filter .25s}
+/* évènements passés : la carte survolée grossit et retrouve ses couleurs, ses voisines grossissent un peu (effet loupe) */
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+ .ev.past{position:relative;transition:transform .25s cubic-bezier(.2,.9,.3,1.25),box-shadow .25s}
+ .ev.past:hover{transform:scale(1.09);z-index:3;box-shadow:0 16px 32px #5a3d1a66}
+ .ev.past:hover img{filter:none}
+ .ev.past:hover+.ev.past,.ev.past:has(+.ev.past:hover){transform:scale(1.035);z-index:2}
+}
 .ev.past .date{background:var(--ink)}
 .empty{padding:1.2rem;border:2px dashed var(--line);text-align:center}
 footer{background:var(--ink);color:var(--bg);text-align:center;padding:1.6rem 1rem;font-size:.9rem}
