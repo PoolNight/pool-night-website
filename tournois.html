@@ -160,7 +160,7 @@ html.emb main{padding-top:0}
 
 <div class="polaroid" id="tbsec">
 <h2>Tables</h2>
-<p class="hint">Renseigne le nombre de tables dans « Tournoi » (facultatif), puis nomme-les ici. Quand tu coches « Prête », la table est attribuée automatiquement au prochain match dès qu’elle est libre. Tu peux aussi choisir la table de chaque match à la main dans son menu déroulant, et marquer un match « En cours » (encadré en jaune). Un chrono part dès qu’une table est attribuée au match ; il devient rouge quand la durée prévue (réglée à côté du nombre de tables) est dépassée. Le temps de jeu cumulé de chaque table est affiché à droite.</p>
+<p class="hint">Renseigne le nombre de tables dans « Tournoi » (facultatif), puis nomme-les ici. Quand tu coches « Prête », la table est attribuée automatiquement au prochain match dès qu’elle est libre. Tu peux aussi choisir la table de chaque match à la main dans son menu déroulant, et marquer un match « En cours » (encadré en jaune). Le chrono part quand tu cliques « Mettre en cours » (et que le match a une table) ; il devient rouge quand la durée prévue (réglée à côté du nombre de tables) est dépassée. Le temps de jeu cumulé de chaque table est affiché à droite.</p>
 <div class="tbs" id="tbl"></div>
 </div>
 
@@ -299,13 +299,13 @@ function autoAssign(){
  const ts=S.tables||[];if(!ts.length||!S.brackets)return false;
  const L=allMs(),ids=new Set(ts.map(t=>t.id)),used=new Set(),busy=new Set();
  L.forEach(({m})=>{
-  if(m.tb&&m.w===null){if(ids.has(m.tb)){used.add(m.tb);busy.add(m.a);busy.add(m.b);if(!m.ts)m.ts=Date.now()}else{delete m.tb;delete m.ts}}
+  if(m.tb&&m.w===null){if(ids.has(m.tb)){used.add(m.tb);busy.add(m.a);busy.add(m.b);if(m.live&&!m.ts)m.ts=Date.now()}else{delete m.tb;delete m.ts}}
  });
  let ch=false;
  for(const t of ts){
   if(!t.ready||used.has(t.id))continue;
   const c=L.find(({m})=>playable(m)&&!m.tb&&!busy.has(m.a)&&!busy.has(m.b));
-  if(c){c.m.tb=t.id;c.m.ts=Date.now();used.add(t.id);busy.add(c.m.a);busy.add(c.m.b);ch=true}
+  if(c){c.m.tb=t.id;if(c.m.live)c.m.ts=Date.now();used.add(t.id);busy.add(c.m.a);busy.add(c.m.b);ch=true}
  }
  return ch;
 }
@@ -328,12 +328,12 @@ function pickTable(k,v){
  const r=REG[k];if(!r)return;
  if(v&&allMs().some(x=>x.m!==r.m&&x.m.tb===v&&x.m.w===null)){alert('Cette table est déjà utilisée par un autre match.');renderB();return}
  if(r.m.tb)tbOff(r.m);
- if(v){r.m.tb=v;r.m.ts=Date.now()}else delete r.m.tb;
+ if(v){r.m.tb=v;if(r.m.live)r.m.ts=Date.now()}else delete r.m.tb;
  save();renderB();
 }
 function toggleLive(k){
  const r=REG[k];if(!r)return;
- if(r.m.live)delete r.m.live;else r.m.live=true;
+ if(r.m.live){tbOff(r.m);delete r.m.live}else{r.m.live=true;if(r.m.tb)r.m.ts=Date.now()}
  save();renderB();
 }
 function renderT(){
