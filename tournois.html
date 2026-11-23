@@ -86,6 +86,7 @@ td input,td select{width:100%}
 .tbr{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;padding:.4rem .6rem;background:#fff;border:1.5px solid var(--ink);border-radius:6px}
 .tbr input[type=text]{flex:1;min-width:120px}
 .tbr .st{font-size:.8rem;opacity:.8;margin-left:auto}
+.tm{font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.tm.over{color:#fff;background:var(--red);padding:.05rem .35rem;border-radius:4px}.ttw{font-size:.8rem;font-variant-numeric:tabular-nums}
 .tbr.free{border-color:#3a7d44}.tbr.busy{border-color:#d99a00;background:#fff8dc}
 header a.lg{display:block;border-radius:50%;transition:transform .15s}
 header a.lg:hover{transform:scale(1.05)}
@@ -148,6 +149,7 @@ html.emb main{padding-top:0}
 <option value="all">Un tableau unique (têtes de série par niveau)</option>
 </select>
 <input id="ntb" type="number" min="0" max="30" placeholder="Nombre de tables (facultatif)" style="width:230px" onchange="setNT(this.value)" aria-label="Nombre de tables (facultatif)">
+<input id="tmin" type="number" min="0" max="240" placeholder="Durée d’une partie (min)" style="width:210px" onchange="setTM(this.value)" aria-label="Durée d’une partie en minutes (facultatif)">
 <button class="b" onclick="gen()">Générer le tableau</button>
 <button class="b ghost" onclick="exportJson()">Exporter tournoi.json</button>
 <button class="b ghost" onclick="resetAll()">Tout effacer</button>
@@ -158,7 +160,7 @@ html.emb main{padding-top:0}
 
 <div class="polaroid" id="tbsec">
 <h2>Tables</h2>
-<p class="hint">Renseigne le nombre de tables dans « Tournoi » (facultatif), puis nomme-les ici. Quand tu coches « Prête », la table est attribuée automatiquement au prochain match dès qu’elle est libre. Tu peux aussi choisir la table de chaque match à la main dans son menu déroulant, et marquer un match « En cours » (encadré en jaune).</p>
+<p class="hint">Renseigne le nombre de tables dans « Tournoi » (facultatif), puis nomme-les ici. Quand tu coches « Prête », la table est attribuée automatiquement au prochain match dès qu’elle est libre. Tu peux aussi choisir la table de chaque match à la main dans son menu déroulant, et marquer un match « En cours » (encadré en jaune). Un chrono part dès qu’une table est attribuée au match ; il devient rouge quand la durée prévue (réglée à côté du nombre de tables) est dépassée. Le temps de jeu cumulé de chaque table est affiché à droite.</p>
 <div class="tbs" id="tbl"></div>
 </div>
 
@@ -279,18 +281,31 @@ function allMs(){
  return a.sort((x,y)=>x.r-y.r);
 }
 const playable=m=>m.w===null&&pl(m.a)&&pl(m.b);
+/* chrono des parties : démarre quand une table est attribuée au match, s'arrête au résultat ; le temps est cumulé par table (t.acc) */
+const fmtD=ms=>{ms=Math.max(0,Math.floor(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60,z=n=>String(n).padStart(2,'0');return h?`${h}:${z(m)}:${z(s)}`:`${z(m)}:${z(s)}`};
+function tbOff(m){
+ if(m.ts&&m.tb){const t=TBS().find(t=>t.id===m.tb);if(t)t.acc=(t.acc||0)+Math.max(0,Date.now()-m.ts)}
+ delete m.ts;
+}
+function setTM(v){S.tmin=Math.max(0,Math.min(240,parseInt(v,10)||0));save();renderB()}
+const tmHtml=m=>m.tb&&m.ts&&m.w===null?`<span class="tm" data-ts="${m.ts}" data-lim="${S.tmin||0}" title="Temps de la partie${S.tmin?' (durée prévue '+S.tmin+' min)':''}">⏱ ${fmtD(Date.now()-m.ts)}${S.tmin?' / '+S.tmin+' min':''}</span>`:'';
+function tick(){
+ const now=Date.now();
+ document.querySelectorAll('.tm[data-ts]').forEach(e=>{const d=now-(+e.dataset.ts),l=(+e.dataset.lim||0)*60000;e.textContent='⏱ '+fmtD(d)+(l?' / '+l/60000+' min':'');e.classList.toggle('over',!!l&&d>l)});
+ document.querySelectorAll('.tt').forEach(e=>{const c=+e.dataset.ts?now-(+e.dataset.ts):0;e.textContent=fmtD((+e.dataset.acc||0)+c)});
+}
 /* attribue chaque table prête et libre au prochain match jouable (tours les plus anciens d'abord) */
 function autoAssign(){
  const ts=S.tables||[];if(!ts.length||!S.brackets)return false;
  const L=allMs(),ids=new Set(ts.map(t=>t.id)),used=new Set(),busy=new Set();
  L.forEach(({m})=>{
-  if(m.tb&&m.w===null){if(ids.has(m.tb)){used.add(m.tb);busy.add(m.a);busy.add(m.b)}else delete m.tb}
+  if(m.tb&&m.w===null){if(ids.has(m.tb)){used.add(m.tb);busy.add(m.a);busy.add(m.b);if(!m.ts)m.ts=Date.now()}else{delete m.tb;delete m.ts}}
  });
  let ch=false;
  for(const t of ts){
   if(!t.ready||used.has(t.id))continue;
   const c=L.find(({m})=>playable(m)&&!m.tb&&!busy.has(m.a)&&!busy.has(m.b));
-  if(c){c.m.tb=t.id;used.add(t.id);busy.add(c.m.a);busy.add(c.m.b);ch=true}
+  if(c){c.m.tb=t.id;c.m.ts=Date.now();used.add(t.id);busy.add(c.m.a);busy.add(c.m.b);ch=true}
  }
  return ch;
 }
@@ -299,7 +314,7 @@ function setNT(v){
  while(ts.length<n)ts.push({id:'t'+uid(),name:'Table '+(ts.length+1),ready:false});
  if(ts.length>n){
   const gone=new Set(ts.splice(n).map(t=>t.id));
-  allMs().forEach(({m})=>{if(gone.has(m.tb))delete m.tb});
+  allMs().forEach(({m})=>{if(gone.has(m.tb)){delete m.tb;delete m.ts}});
  }
  autoAssign();save();renderB();
 }
@@ -312,7 +327,8 @@ function tbSet(id,k,v){
 function pickTable(k,v){
  const r=REG[k];if(!r)return;
  if(v&&allMs().some(x=>x.m!==r.m&&x.m.tb===v&&x.m.w===null)){alert('Cette table est déjà utilisée par un autre match.');renderB();return}
- if(v)r.m.tb=v;else delete r.m.tb;
+ if(r.m.tb)tbOff(r.m);
+ if(v){r.m.tb=v;r.m.ts=Date.now()}else delete r.m.tb;
  save();renderB();
 }
 function toggleLive(k){
@@ -321,10 +337,11 @@ function toggleLive(k){
  save();renderB();
 }
 function renderT(){
- const ts=S.tables||[],busy={};
- allMs().forEach(({m})=>{if(m.tb&&m.w===null){const a=pl(m.a),b=pl(m.b);busy[m.tb]=a&&b?`${a.p} ${a.n} vs ${b.p} ${b.n}`:'occupée'}});
+ const ts=S.tables||[],busy={},cur={};
+ allMs().forEach(({m})=>{if(m.tb&&m.w===null){cur[m.tb]=m.ts||0;const a=pl(m.a),b=pl(m.b);busy[m.tb]=a&&b?`${a.p} ${a.n} vs ${b.p} ${b.n}`:'occupée'}});
  const n=$('ntb');if(n&&document.activeElement!==n)n.value=ts.length||'';
- $('tbl').innerHTML=ts.length?ts.map(t=>`<div class="tbr ${busy[t.id]?'busy':t.ready?'free':''}"><input type="text" value="${esc(t.name)}" onchange="tbSet('${t.id}','name',this.value)" aria-label="Nom de la table"><label><input type="checkbox"${t.ready?' checked':''} onchange="tbSet('${t.id}','ready',this.checked)"> Prête</label><span class="st">${busy[t.id]?esc(busy[t.id]):t.ready?'libre':'non prête'}</span></div>`).join('')
+ const tm=$('tmin');if(tm&&document.activeElement!==tm)tm.value=S.tmin||'';
+ $('tbl').innerHTML=ts.length?ts.map(t=>`<div class="tbr ${busy[t.id]?'busy':t.ready?'free':''}"><input type="text" value="${esc(t.name)}" onchange="tbSet('${t.id}','name',this.value)" aria-label="Nom de la table"><label><input type="checkbox"${t.ready?' checked':''} onchange="tbSet('${t.id}','ready',this.checked)"> Prête</label><span class="st">${busy[t.id]?esc(busy[t.id]):t.ready?'libre':'non prête'}</span><span class="ttw" title="Temps de jeu cumulé sur cette table">Total : <b class="tt" data-acc="${t.acc||0}" data-ts="${cur[t.id]||0}">${fmtD((t.acc||0)+(cur[t.id]?Date.now()-cur[t.id]:0))}</b></span></div>`).join('')
   :'<div class="empty">Aucune table. Saisis un nombre de tables dans la section « Tournoi » (facultatif).</div>';
 }
 
@@ -439,7 +456,7 @@ function pick(k,id){
  const had=r.m.w;r.m.w=had===id?null:id;
  /* horodatage de la saisie : sert à rejouer les matchs dans l'ordre pour le classement ELO */
  if(r.m.w===null)delete r.m.t;else if(had===null||typeof r.m.t!=='number')r.m.t=Date.now();
- if(r.m.w!==null){delete r.m.tb;delete r.m.live}
+ if(r.m.w!==null){tbOff(r.m);delete r.m.tb;delete r.m.live}
  prop(r.b);autoAssign();save();renderB();
 }
 function mHtml(m,b,me,edit){
@@ -449,9 +466,9 @@ function mHtml(m,b,me,edit){
   const c=['pl',m.w===id?'win':'',m.w&&m.w!==id?'lose':'',id===me?'me':''].join(' ');
   return `<div class="${c}"${edit&&ok?` onclick="pick(${k},'${id}')"`:''}>${esc(p.p)} ${esc(p.n)}<small>${esc(p.l.slice(0,3))}</small></div>`};
  const ts=S.tables||[],open=ok&&m.w===null;let foot='';
- if(open&&edit&&ts.length)foot=`<div class="mt"><button class="${m.live?'on':''}" onclick="toggleLive(${k})" aria-pressed="${!!m.live}">${m.live?'● En cours':'Mettre en cours'}</button><select onchange="pickTable(${k},this.value)" aria-label="Table du match"><option value="">Table…</option>${ts.map(t=>`<option value="${t.id}"${m.tb===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select></div>`;
+ if(open&&edit&&ts.length)foot=`<div class="mt"><button class="${m.live?'on':''}" onclick="toggleLive(${k})" aria-pressed="${!!m.live}">${m.live?'● En cours':'Mettre en cours'}</button><select onchange="pickTable(${k},this.value)" aria-label="Table du match"><option value="">Table…</option>${ts.map(t=>`<option value="${t.id}"${m.tb===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select>${tmHtml(m)}</div>`;
  else if(open&&edit)foot=`<div class="mt"><button class="${m.live?'on':''}" onclick="toggleLive(${k})" aria-pressed="${!!m.live}">${m.live?'● En cours':'Mettre en cours'}</button></div>`;
- else if(open&&(m.live||m.tb))foot=`<div class="mb"><em>${m.live?'En cours':''}</em><span>${m.tb&&tbName(m.tb)?esc(tbName(m.tb)):''}</span></div>`;
+ else if(open&&(m.live||m.tb))foot=`<div class="mb"><em>${m.live?'En cours':''}</em><span>${m.tb&&tbName(m.tb)?esc(tbName(m.tb)):''} ${tmHtml(m)}</span></div>`;
  return `<div class="match${path?' path':''}${now?' now':''}${open&&m.live?' live':''}">${row(m.a)}${row(m.b)}${foot}</div>`;
 }
 /* ---------- zoom des tableaux (boutons, pincement, Ctrl + molette) ---------- */
@@ -643,7 +660,7 @@ function exportJson(){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
  a.download='tournoi.json';a.click();
 }
-function resetAll(){if(confirm('Effacer participants et tableau ?')){S={players:[],brackets:null,mode:'level',tables:(S.tables||[]).map(t=>({...t}))};save();renderP()}}
+function resetAll(){if(confirm('Effacer participants et tableau ?')){S={players:[],brackets:null,mode:'level',tmin:S.tmin||0,tables:(S.tables||[]).map(t=>({...t,acc:0}))};save();renderP()}}
 function show(v){
  $('vO').classList.toggle('hide',v!=='org');$('vP').classList.toggle('hide',v!=='pl');
  $('tO').classList.toggle('on',v==='org');$('tP').classList.toggle('on',v==='pl');
@@ -690,6 +707,7 @@ if(EMBED&&parent!==window){
  const send=()=>parent.postMessage({pnH:Math.ceil(document.body.getBoundingClientRect().height)+8},'*');
  new ResizeObserver(send).observe(document.body);addEventListener('load',send);send();
 }
+setInterval(tick,1000);
 </script>
 </body>
 </html>

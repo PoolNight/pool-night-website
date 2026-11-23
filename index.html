@@ -129,6 +129,7 @@ label.btn{display:inline-block}
 [hidden]{display:none!important}
 @media(max-width:560px){.stamp{display:none}nav a{padding:.7rem .6rem;font-size:.9rem}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+.lbt[hidden]{display:none}.lbs{display:flex;gap:.6rem;align-items:center;margin:.9rem 0 .4rem}.lbs label{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem}.lbs select{font:inherit;font-size:1rem;padding:.45rem .8rem;border:2px solid var(--ink,#2b1d14);background:#fff8e8;color:inherit;border-radius:4px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -198,7 +199,8 @@ PoolNight est une association étudiante dédiée à la promotion du billard sou
 
 <section id="p-classement" hidden>
 <div class="rw"><h2 class="rib">Classement</h2></div>
-<div class="lbt" role="group" aria-label="Type de classement"><button type="button" id="lbt-all" onclick="lbSet('all')">Général</button><button type="button" id="lbt-tournois" onclick="lbSet('tournois')">Tournois</button><button type="button" id="lbt-defis" onclick="lbSet('defis')">Défis</button></div>
+<div class="lbs"><label for="lbsp">Sport</label><select id="lbsp" onchange="spSet(this.value)" aria-label="Choisir le classement"><option value="billard">🎱 Billard</option><option value="flechettes">🎯 Fléchettes</option></select></div>
+<div class="lbt" id="lbtabs" role="group" aria-label="Type de classement"><button type="button" id="lbt-all" onclick="lbSet('all')">Général</button><button type="button" id="lbt-tournois" onclick="lbSet('tournois')">Tournois</button><button type="button" id="lbt-defis" onclick="lbSet('defis')">Défis</button></div>
 <div class="lbw" id="lb"></div>
 <p class="st" id="lbn"></p>
 <div class="btns"><button class="btn" onclick="defiOpen()">Défie tes amis</button></div>
@@ -309,34 +311,42 @@ function extractTournoi(t){
  return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open,champs};
 }
 /* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
-function board(src='all'){
+function board(src='all',sp=SP){
  const P={};
- const get=nm=>P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0});
+/* Orthographes différentes d'un même joueur : « variante » → nom affiché. Ajoute une ligne par joueur concerné. */
+ const ALIAS={'Virgile HOQUET-GALLET':'Virgile Hocquet-Gallet'},AL={};Object.keys(ALIAS).forEach(k=>AL[pkey(k)]=ALIAS[k]);
+ const get=nm=>{nm=AL[pkey(nm)]||nm;return P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0})};
  const play=m=>{
    const A=get(m.a),B=get(m.b);if(A===B)return;
    const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
    A.elo+=d;B.elo-=d;(sa?A:B).elo+=BONUS_WIN;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
  },ev=[];
- if(src!=='defis')D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
- if(src!=='tournois')CH.filter(d=>d.status==='confirmed').forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
+ if(sp==='billard'&&src!=='defis')D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
+ if(src!=='tournois')CH.filter(d=>d.status==='confirmed'&&(d.sp||'billard')===sp).forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
  ev.sort((x,y)=>x.ts-y.ts);   /* tri stable : à date égale, l'ordre d'enregistrement est conservé */
  ev.forEach(e=>{if(e.t){e.t.matches.forEach(play);(e.t.champs||[]).forEach(n=>{get(n).elo+=BONUS_TITLE})}else play({a:e.d.a,b:e.d.b,w:e.d.w})});
  return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
 }
 const BALLC=['#f2c200','#1f4fa8','#d3291f','#5b2a86','#ee7a14','#1f7a3a','#7a1f1f','#141414'];
 const ball=n=>`<span class="bl${n>8?' s':''}" style="--c:${BALLC[(n-1)%8]}" role="img" aria-label="Rang ${n}"><b>${n}</b></span>`;
-let LB='all';
+let LB='all',SP='billard';
+const SPN={billard:'Billard',flechettes:'Fléchettes'};
 function lbSet(m){LB=m;renderBoard()}
+function spSet(v){const o=SP;SP=v==='flechettes'?'flechettes':'billard';if(SP==='flechettes')LB='defis';else if(o==='flechettes')LB='all';renderBoard();renderDefiLog();if($('dsp'))$('dsp').value=SP}
+function dSport(v){spSet(v)}
 function renderBoard(){
+ const fl=SP==='flechettes';if(fl)LB='defis';
+ const sel=$('lbsp');if(sel)sel.value=SP;
+ const tb=$('lbtabs');if(tb)tb.hidden=fl;
  const rows=board(LB);
  ['all','tournois','defis'].forEach(k=>{const b=$('lbt-'+k);if(b)b.setAttribute('aria-pressed',k===LB)});
- const empty={all:'Le classement apparaîtra après le premier tournoi importé.',tournois:'Aucun tournoi importé pour l’instant.',defis:'Aucun défi confirmé pour l’instant.'}[LB];
+ const empty=fl?{defis:'Aucun défi de fléchettes confirmé pour l’instant. Lance le premier avec « Défie un ami ».'}:{all:'Le classement apparaîtra après le premier tournoi importé.',tournois:'Aucun tournoi importé pour l’instant.',defis:'Aucun défi confirmé pour l’instant.'}[LB];
  $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th class="pts">ELO</th><th>Matchs</th><th>Victoires</th><th>Défaites</th><th>Win rate</th><th>Variation</th></tr>${rows.map(x=>{
   const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
   return `<tr class="${rk<4?'top'+rk:''}"><td>${rk<=15?ball(rk):rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
   :`<div class="empty">${empty}</div>`;
  const base=`Chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire`;
- $('lbn').textContent={
+ $('lbn').textContent=fl?`Classement fléchettes : ELO calculé uniquement avec les défis de fléchettes confirmés par l’adversaire. ${base}.`:{
   all:`Classement ELO général (tournois et défis) : ${base} et ${BONUS_TITLE} points pour chaque titre de tournoi. Les défis entre joueurs comptent une fois confirmés par l’adversaire.`,
   tournois:`Classement des tournois : ELO calculé uniquement avec les matchs de tournoi. ${base} et ${BONUS_TITLE} points pour chaque titre.`,
   defis:`Classement des défis : ELO calculé uniquement avec les défis confirmés. ${base}.`}[LB];
@@ -360,10 +370,11 @@ function defiOpen(){DP=null;$('defi').hidden=false;renderDefiForm();$('defi').sc
 function defiClose(){$('defi').hidden=true}
 function defiLeave(){DP=null;$('defi').hidden=true;try{history.replaceState(null,'','#classement')}catch(e){}}
 function renderDefiForm(){
- const me=lsGet('pn_me')||'',names=board().map(x=>x.name);
+ const me=lsGet('pn_me')||'',names=[...new Set([...board('all','billard'),...board('all','flechettes')].map(x=>x.name))];
  $('defi').innerHTML=`<h3 class="oh">Défie un ami</h3>
 <p class="st">Joue ton match, saisis le résultat puis envoie le lien à ton adversaire. Le match compte pour l’ELO dès qu’il le confirme.</p>
 <datalist id="dnames">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+<div class="row"><select id="dsp" aria-label="Sport" onchange="dSport(this.value)"><option value="billard"${SP==='billard'?' selected':''}>🎱 Billard</option><option value="flechettes"${SP==='flechettes'?' selected':''}>🎯 Fléchettes</option></select></div>
 <div class="row"><input id="dme" list="dnames" value="${esc(me)}" placeholder="Ton Prénom NOM" aria-label="Ton nom"><input id="dop" list="dnames" placeholder="Prénom NOM de l’adversaire" aria-label="Nom de l’adversaire"></div>
 <div class="row"><select id="dw" aria-label="Résultat"><option value="0">J’ai gagné</option><option value="1">J’ai perdu</option></select><input id="dsc" placeholder="Score (facultatif) ex. 5-3" maxlength="10" aria-label="Score"></div>
 <div class="row"><button class="btn" id="dgo" onclick="defiSend()">Envoyer le défi</button><button class="btn alt sm" onclick="defiClose()">Fermer</button></div>
@@ -372,7 +383,7 @@ function renderDefiForm(){
 async function defiSend(){
  const a=$('dme').value.trim(),b=$('dop').value.trim(),w=+$('dw').value,score=$('dsc').value.trim(),m=$('dmsg');
  m.textContent='';$('dgo').disabled=true;
- try{const r=await dApi({action:'create',a,b,w,score});
+ try{const r=await dApi({action:'create',sp:$('dsp').value,a,b,w,score});
   lsSet('pn_me',a);const L=lsGet('pn_defis')||[];L.unshift({id:r.id,ck:r.ck,dk:r.dk,a,b,w,score,t:Date.now()});lsSet('pn_defis',L.slice(0,30));
   await loadDefis();m.textContent='Défi enregistré ! Envoie le lien à '+b+' (lien ci-dessous) pour qu’il le confirme.';
   $('dop').value='';$('dsc').value=''}
@@ -383,7 +394,7 @@ function renderMine(){
  const L=(lsGet('pn_defis')||[]).map(x=>({x,d:CH.find(c=>c.id===x.id)||(x.a&&Date.now()-x.t<12e4?{id:x.id,a:x.a,b:x.b,w:x.w,score:x.score,status:'pending'}:null)})).filter(y=>y.d).slice(0,6);
  el.innerHTML=L.length?'<h4 class="dh">Mes défis</h4>'+L.map(({x,d})=>{
   const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a,st={pending:'En attente de '+d.b,awaiting:'Validation du bureau en cours',confirmed:'Confirmé',rejected:'Contesté',expired:'Expiré'}[d.status]||d.status;
-  return `<div class="oe"><div class="row"><span><b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span class="tag ${d.status==='pending'?'u':'p'}">${esc(st)}</span></div>${d.status==='pending'?`<div class="row"><input readonly value="${esc(defiLink(x))}" onclick="this.select()" aria-label="Lien à envoyer à l’adversaire" style="flex:1;min-width:14rem"></div><div class="row"><button class="btn sm" onclick="defiShare('${x.id}')">Partager le lien</button><button class="btn alt sm" onclick="defiCopy('${x.id}')">Copier le lien</button><button class="btn alt sm" onclick="defiCancel('${x.id}')">Annuler</button></div>`:''}</div>`}).join(''):''}
+  return `<div class="oe"><div class="row"><span>${d.sp==='flechettes'?'🎯 ':''}<b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span class="tag ${d.status==='pending'?'u':'p'}">${esc(st)}</span></div>${d.status==='pending'?`<div class="row"><input readonly value="${esc(defiLink(x))}" onclick="this.select()" aria-label="Lien à envoyer à l’adversaire" style="flex:1;min-width:14rem"></div><div class="row"><button class="btn sm" onclick="defiShare('${x.id}')">Partager le lien</button><button class="btn alt sm" onclick="defiCopy('${x.id}')">Copier le lien</button><button class="btn alt sm" onclick="defiCancel('${x.id}')">Annuler</button></div>`:''}</div>`}).join(''):''}
 async function defiCopy(id){
  const x=mineOf(id);if(!x)return;const u=defiLink(x),m=$('dmsg');
  try{await navigator.clipboard.writeText(u);if(m)m.textContent='Lien copié.'}catch(e){prompt('Copie ce lien :',u)}}
@@ -399,7 +410,7 @@ function defiCheck(){
  if(!DP)return;
  const d=CH.find(c=>c.id===DP.id),el=$('defi');el.hidden=false;
  if(!d){el.innerHTML='<h3 class="oh">Défi introuvable</h3><p class="st">Ce lien n’est plus valable.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>';return}
- el.innerHTML=`<h3 class="oh">Confirme un défi</h3><p class="lead"><b>${esc(d.a)}</b> ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'}${d.score?' ('+esc(d.score)+')':''}.</p><p class="st">Défi adressé à ${esc(d.b)}.</p>`
+ el.innerHTML=`<h3 class="oh">Confirme un défi</h3><p class="lead">${d.sp==='flechettes'?'🎯 Fléchettes · ':''}<b>${esc(d.a)}</b> ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'}${d.score?' ('+esc(d.score)+')':''}.</p><p class="st">Défi adressé à ${esc(d.b)}.</p>`
   +(d.status==='pending'?`<p class="st">Si c’est exact, confirme : le match sera compté dans l’ELO des deux joueurs.</p><div class="row"><button class="btn" onclick="defiAnswer(true)">C’est exact</button><button class="btn alt" onclick="defiAnswer(false)">Je conteste</button></div><p class="st" id="dmsg" role="status"></p>`
    :`<p class="st">Ce défi est déjà ${{confirmed:'confirmé',awaiting:'confirmé, en attente de validation du bureau',rejected:'contesté',expired:'expiré'}[d.status]||'clos'}.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>`)}
 async function defiAnswer(ok){
@@ -407,13 +418,13 @@ async function defiAnswer(ok){
  try{await dApi({action:'confirm',id:DP.id,ck:DP.k,accept:ok});await loadDefis()}
  catch(e){const m=$('dmsg');if(m)m.textContent=e.message}}
 function renderDefiLog(){
- const c=CH.filter(d=>d.status==='confirmed').sort((a,b)=>(b.tc||b.t)-(a.tc||a.t)).slice(0,8),p=CH.filter(d=>d.status==='pending'||d.status==='awaiting').length;
+ const c=CH.filter(d=>d.status==='confirmed'&&(d.sp||'billard')===SP).sort((a,b)=>(b.tc||b.t)-(a.tc||a.t)).slice(0,8),p=CH.filter(d=>d.status==='pending'||d.status==='awaiting').length;
  $('dflog').innerHTML=c.length||p?'<h3 class="oh">Derniers défis</h3>'+c.map(d=>{const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a;return `<div class="dfl"><span><b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span>${new Date(d.tc||d.t).toLocaleDateString('fr-FR')}</span></div>`}).join('')+(p?`<p class="st">${p} défi${p>1?'s':''} en attente de confirmation ou de validation.</p>`:''):''}
 /* espace orga : corriger ou supprimer les défis */
 const okey=()=>{const v=$('okey')?$('okey').value:(ss('pn_okey')||'');try{sessionStorage.setItem('pn_okey',v)}catch(e){}return v};
 function orgaDefis(){
  const sel=(v,arr)=>arr.map(([k,t])=>`<option value="${k}"${String(v)===String(k)?' selected':''}>${t}</option>`).join('');
- const rows=CH.map(d=>`<div class="oe"><div class="row"><input id="oa_${d.id}" value="${esc(d.a)}" aria-label="Joueur A"><span>contre</span><input id="ob_${d.id}" value="${esc(d.b)}" aria-label="Joueur B"></div>
+ const rows=CH.map(d=>`<div class="oe"><div class="row"><select id="osp_${d.id}" aria-label="Sport"><option value="billard"${(d.sp||'billard')==='billard'?' selected':''}>Billard</option><option value="flechettes"${d.sp==='flechettes'?' selected':''}>Fléchettes</option></select><input id="oa_${d.id}" value="${esc(d.a)}" aria-label="Joueur A"><span>contre</span><input id="ob_${d.id}" value="${esc(d.b)}" aria-label="Joueur B"></div>
 <div class="row"><select id="ow_${d.id}" aria-label="Vainqueur">${sel(d.w,[[0,'A gagne'],[1,'B gagne']])}</select><input id="os_${d.id}" value="${esc(d.score||'')}" placeholder="Score" size="7" aria-label="Score"><select id="ot_${d.id}" aria-label="Statut">${sel(d.status,[['pending','En attente'],['awaiting','À valider (confirmé par l’adversaire)'],['confirmed','Confirmé'],['rejected','Contesté'],['void','Annulé par l’orga'],['expired','Expiré']])}</select></div>
 <div class="row"><span class="st">Déclaré le ${new Date(d.t).toLocaleString('fr-FR')}${d.tc?' · traité le '+new Date(d.tc).toLocaleString('fr-FR'):''}${d.edited?' · modifié par l’orga':''}</span>${d.status==='awaiting'?`<button class="btn sm" onclick="defiOrgaValidate('${d.id}')">Valider</button>`:''}<button class="btn sm" onclick="defiOrgaSave('${d.id}')">Enregistrer</button><button class="btn alt sm" onclick="defiOrgaDel('${d.id}')">Supprimer</button></div></div>`).join('');
  return `<div class="frame"><h3 class="oh">Défis des joueurs</h3><p class="st">Tous les défis déclarés. Si un résultat est truqué : change le vainqueur, passe-le en « Annulé » ou supprime-le, l’ELO est recalculé aussitôt pour tout le monde. Seul un défi « Confirmé » compte. A est le joueur qui a déclaré le défi.</p>
@@ -422,7 +433,7 @@ function orgaDefis(){
 <p class="st" id="odmsg" role="status"></p>${rows||'<p class="st">Aucun défi pour le moment.</p>'}</div>`}
 async function defiOrgaSave(id){
  const g=k=>$(k+'_'+id).value,m=$('odmsg');
- try{await dApi({action:'orga_update',id,a:g('oa'),b:g('ob'),w:+g('ow'),score:g('os'),status:g('ot')==='expired'?'pending':g('ot')},okey());
+ try{await dApi({action:'orga_update',id,sp:g('osp'),a:g('oa'),b:g('ob'),w:+g('ow'),score:g('os'),status:g('ot')==='expired'?'pending':g('ot')},okey());
   await loadDefis();renderOrga();$('odmsg').textContent='Enregistré, ELO recalculé.'}
  catch(e){m.textContent=e.message}}
 function defiOrgaValidate(id){$('ot_'+id).value='confirmed';defiOrgaSave(id)}
@@ -499,6 +510,24 @@ async function importRemote(){
  try{const r=await fetch(API+'/api/tournoi',{cache:'no-store'});const j=r.ok?await r.json():null;if(j){addResult(j);return}}catch(e){}
  alert('Aucun tournoi publié sur la page tournois (ou lecture impossible). Génère un tableau depuis l’onglet Tournois, ou charge tournoi.json avec « Importer un fichier ».');
 }
+async function renameP(){
+ const a=$('rnA').value.trim(),b=$('rnB').value.trim(),m=$('rnmsg');
+ if(a.length<2||b.length<2){m.textContent='Renseigne le nom à remplacer et le nom correct.';return}
+ const ka=pkey(a),fx=x=>pkey(x)===ka?b:x;let n=0;
+ D.results.forEach(t=>{
+  (t.matches||[]).forEach(x=>{if(pkey(x.a)===ka){x.a=b;n++}if(pkey(x.b)===ka){x.b=b;n++}});
+  if(t.champs)t.champs=t.champs.map(c=>{if(pkey(c)===ka)n++;return fx(c)});
+ });
+ if(n)touch();
+ let nd=0,err='';
+ for(const d of CH.filter(d=>pkey(d.a)===ka||pkey(d.b)===ka)){
+  try{await dApi({action:'orga_update',id:d.id,sp:d.sp||'billard',a:fx(d.a),b:fx(d.b),w:d.w,score:d.score||'',status:d.status==='expired'?'pending':d.status},okey());nd++}
+  catch(e){err=' Défis non modifiés : '+e.message+'.';break}
+ }
+ if(nd)await loadDefis();
+ renderBoard();renderOrga();
+ $('rnmsg').textContent=(n||nd?`${n} occurrence(s) renommée(s) dans les tournois, ${nd} défi(s) modifié(s).`+(n?' Publie pour que ça apparaisse sur le site.':''):'Aucun joueur trouvé avec ce nom.')+err;
+}
 function resDel(i){if(confirm('Retirer ce tournoi du classement ?')){D.results.splice(i,1);touch();renderBoard();renderOrga()}}
 async function makeHash(){try{$('hout').textContent=await sha($('npw').value)}catch(e){$('hout').textContent='Indisponible hors https.'}}
 function renderOrga(){
@@ -512,6 +541,9 @@ function renderOrga(){
 <div class="row"><input id="rn" placeholder="Nom du tournoi" aria-label="Nom du tournoi"><input id="rd" type="date" value="${iso(new Date())}" aria-label="Date du tournoi"></div>
 <div class="row"><label class="btn alt sm">Importer un fichier<input type="file" accept=".json" hidden onchange="importFile(this)"></label><button class="btn alt sm" onclick="importRemote()">Importer depuis le site tournois</button></div>
 ${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).toLocaleDateString('fr-FR')} · ${t.matches?t.matches.length+' matchs':'ancien format, non compté'}</span><button class="btn sm" onclick="resDel(${i})">Retirer</button></div>`).join('')||'<p class="st">Aucun tournoi importé.</p>'}</div>
+<div class="frame"><h3 class="oh">Corriger un nom de joueur</h3><p class="st">Remplace une orthographe par une autre dans tous les tournois enregistrés et dans les défis (majuscules, accents et ordre prénom/nom sont déjà ignorés). Les défis modifiés sont enregistrés tout de suite ; pour les tournois, pense à publier ensuite.</p>
+<div class="row"><input id="rnA" placeholder="Nom à remplacer (ex. Virgile HOQUET-GALLET)" aria-label="Nom à remplacer"><input id="rnB" placeholder="Nom correct (ex. Virgile Hocquet-Gallet)" aria-label="Nom correct"><button class="btn" onclick="renameP()">Renommer</button></div>
+<p class="st" id="rnmsg" role="status"></p></div>
 ${orgaDefis()}<div class="frame"><h3 class="oh">Publication</h3><p class="st">Les évènements et résultats publiés sont visibles tout de suite par tout le monde (aucun déploiement nécessaire).</p>
 <div class="row"><label><input type="checkbox" id="ga"${auto?' checked':''} onchange="autoSave(this.checked)"> Publier automatiquement</label></div>
 <div class="row"><button class="btn" onclick="okey();publish()">Publier</button><button class="btn alt sm" onclick="exportData()">Exporter data.json</button></div>

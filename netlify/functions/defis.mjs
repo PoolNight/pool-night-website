@@ -22,6 +22,8 @@ const err = (m, s = 400) => out({ error: m }, s);
 const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const pkey = n => norm(n).split(/\s+/).sort().join(' ');
 const clean = s => String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 50);
+const SPORTS = ['billard', 'flechettes'];
+const cleanSport = x => SPORTS.includes(x) ? x : 'billard';
 const cleanScore = s => String(s == null ? '' : s).replace(/[^0-9 :\-–]/g, '').trim().slice(0, 10);
 const rnd = n => crypto.randomUUID().replace(/-/g, '').slice(0, n);
 const STATUS = ['pending', 'awaiting', 'confirmed', 'rejected', 'void'];
@@ -90,7 +92,7 @@ export async function handle(req, store, env, now = Date.now(), ip = '') {
     if (live.filter(d => d.status === 'pending' && pkey(d.a) === pkey(a)).length >= MAX_PENDING_BY)
       return err('Tu as déjà trop de défis en attente de confirmation.', 429);
     await rlAdd(store, ip, 'create', HOUR, now);
-    const d = { id: rnd(12), a, b: o, w, score: cleanScore(b.score), status: 'pending', t: now, ck: rnd(24), dk: rnd(24) };
+    const d = { id: rnd(12), sp: cleanSport(b.sp), a, b: o, w, score: cleanScore(b.score), status: 'pending', t: now, ck: rnd(24), dk: rnd(24) };
     await store.setJSON('d:' + d.id, d);
     return out({ id: d.id, ck: d.ck, dk: d.dk });
   }
@@ -131,7 +133,7 @@ export async function handle(req, store, env, now = Date.now(), ip = '') {
     if (b.w !== 0 && b.w !== 1) return err('Résultat invalide.');
     if (!STATUS.includes(b.status)) return err('Statut invalide.');
     if (b.status === 'confirmed' && d.status !== 'confirmed') d.tc = now;
-    Object.assign(d, { a, b: o, w: b.w, score: cleanScore(b.score), status: b.status, edited: true });
+    Object.assign(d, { sp: SPORTS.includes(b.sp) ? b.sp : cleanSport(d.sp), a, b: o, w: b.w, score: cleanScore(b.score), status: b.status, edited: true });
     await store.setJSON('d:' + d.id, d);
     return out({ ok: true });
   }
