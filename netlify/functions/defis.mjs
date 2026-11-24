@@ -1,5 +1,5 @@
-/* Défis entre joueurs PoolNight : stockage dans Netlify Blobs, route /api/defis.
-   Variable d'environnement à définir sur Netlify : ORGANIZER_KEY (la même clé que celle de la page tournois). */
+/* Défis entre joueurs PoolNight : stockage dans Netlify Blobs, route /api/defis. */
+import { hasOrganizerSession, sameOrigin } from "../lib/organizer-session.mjs";
 
 const DAY = 864e5, HOUR = 36e5, EXPIRE = 7 * DAY;
 const MAX_TOTAL = 3000, MAX_PAIR_DAY = 3, MAX_PENDING_BY = 5;
@@ -7,11 +7,10 @@ const MAX_PLAYER_WEEK = 10;      /* défis (en attente + comptés) par joueur su
 const MAX_PENDING_ALL = 150;     /* défis en attente en même temps, tous joueurs confondus */
 const IP_CREATE = 6;             /* créations de défis par heure et par adresse IP */
 const IP_ANSWER = 20;            /* confirmations / annulations (réussies ou non) par heure et par IP */
-const IP_ORGA_FAIL = 8;          /* mauvaises clés organisateur par heure et par IP */
 
 const H = {
   'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'content-type,x-organizer-key',
+  'access-control-allow-headers': 'content-type',
   'access-control-allow-methods': 'GET,POST,OPTIONS',
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store'
@@ -53,7 +52,7 @@ async function rlAdd(store, ip, kind, win, now) {
 }
 
 /* cœur testable : store = { get, setJSON, delete, list } (Netlify Blobs) */
-export async function handle(req, store, env, now = Date.now(), ip = '') {
+export async function handle(req, store, authorize, now = Date.now(), ip = '') {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: H });
   const all = async () => {
     const { blobs } = await store.list({ prefix: 'd:' });
@@ -117,10 +116,8 @@ export async function handle(req, store, env, now = Date.now(), ip = '') {
   }
 
   if (act === 'orga_update' || act === 'orga_delete' || act === 'orga_config') {
-    /* anti force brute : trop de mauvaises clés => refus avant même de comparer */
-    if (await rlCount(store, ip, 'orgafail', HOUR, now) >= IP_ORGA_FAIL) return err('Trop d’essais. Réessaie dans une heure.', 429);
-    const key = req.headers.get('x-organizer-key');
-    if (!env.ORGANIZER_KEY || key !== env.ORGANIZER_KEY) { await rlAdd(store, ip, 'orgafail', HOUR, now); return err('Clé organisateur incorrecte.', 401); }
+    if (!sameOrigin(req)) return err('Origine non autorisée.', 403);
+    if (!(await authorize(req))) return err('Session organisateur requise.', 401);
     if (act === 'orga_config') {
       await store.setJSON('cfg', { validation: !!b.validation });
       return out({ ok: true, validation: !!b.validation });
@@ -143,7 +140,9 @@ export async function handle(req, store, env, now = Date.now(), ip = '') {
 export default async (req, context) => {
   const { getStore } = await import('@netlify/blobs');
   const ip = (context && context.ip) || req.headers.get('x-nf-client-connection-ip') || '';
-  return handle(req, getStore({ name: 'defis', consistency: 'strong' }), process.env, Date.now(), ip);
+  const store = getStore({ name: 'defis', consistency: 'strong' });
+  const authorize = request => hasOrganizerSession(request, Netlify.env.get("ORGANIZER_KEY"));
+  return handle(req, store, authorize, Date.now(), ip);
 };
 
 export const config = { path: '/api/defis' };

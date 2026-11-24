@@ -1,619 +1,224 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PoolNight – Club de billard d'EPITA</title>
-<meta name="description" content="PoolNight, club de billard d'EPITA : soirées, tournois et carte de membre.">
-<link rel="icon" href="assets/logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f3e0c4;--red:#c0281f;--dark:#8f1d16;--ink:#2f3a32;--card:#f6f3ec;--line:#d9c4a1;--gold:#a8742c}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.6}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.22;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-a{color:inherit}
-:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-.hero{position:relative;text-align:center;padding:1.6rem 1rem 1.4rem;overflow:hidden;border-bottom:4px double var(--ink);background:repeating-conic-gradient(from -90deg at 50% 55%,#c0281f14 0 5deg,#0000 5deg 10deg)}
-.top{display:inline-block;font:400 .95rem Anton,sans-serif;letter-spacing:.35em;text-transform:uppercase;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);padding:.2rem 1rem}
-.logo{display:block;width:132px;height:132px;margin:1rem auto .6rem;border-radius:50%;box-shadow:0 0 0 4px var(--bg),0 0 0 7px var(--ink)}
-h1{margin:0;font:400 clamp(3rem,13vw,7rem)/.95 "Abril Fatface",serif;color:var(--red);letter-spacing:.01em;text-shadow:3px 3px 0 var(--ink)}
-h1 span{color:var(--ink);text-shadow:3px 3px 0 var(--red)}
-.sub{font:400 1.2rem Anton,sans-serif;letter-spacing:.2em;text-transform:uppercase;margin:.8rem 0 .2rem}
-.slogan{font:italic 1.15rem "DM Sans",serif;margin:0}
-.rwst{display:flex;align-items:center;justify-content:center;gap:.6rem}
-.rwst .rib{min-width:0;font-size:clamp(1.15rem,4.6vw,1.6rem)}
-.stamp{flex:none;width:clamp(64px,18vw,92px);aspect-ratio:1;border:5px double var(--red);border-radius:50%;color:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:400 clamp(.55rem,2.3vw,.8rem)/1.1 Anton,sans-serif;letter-spacing:.08em;text-transform:uppercase;transform:rotate(14deg);background:#f3e0c4cc}
-.stamp b{display:block;font:400 1.9em Anton,sans-serif}
-nav{position:sticky;top:0;z-index:20;background:var(--ink);display:flex;justify-content:center;flex-wrap:wrap;border-bottom:3px solid var(--red)}
-nav a{color:var(--bg);text-decoration:none;font:400 1rem Anton,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:.8rem 1.1rem;border-bottom:4px solid transparent;margin-bottom:-3px}
-nav a:hover{background:#ffffff14}
-nav a[aria-current]{color:#fff}
-/* queue de billard : remplace le soulignement de l'onglet actif */
-#cue,#ball{position:absolute;z-index:2;pointer-events:none;transition:opacity .2s;left:0;top:0}
-#cue{height:8px;clip-path:polygon(0 0,100% 32%,100% 68%,0 100%);background:linear-gradient(90deg,#5a3a1c 0 10%,#c0281f 10% 14%,#5a3a1c 14% 18%,#e9cf9c 18% 93%,#4f9ac4 93%)}
-#ball{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 35%,#e4dccb 75%,#b9ae96);box-shadow:0 1px 2px #0007}
-#ball i{position:absolute;inset:0;border-radius:50%}
-#ball i::after{content:"";position:absolute;left:2px;top:3px;width:3.5px;height:3.5px;border-radius:50%;background:var(--red)}
-#cue.off,#ball.off{opacity:0}
-#defi input,#defi select,.o select{font:inherit;padding:.45rem .6rem;border:1.5px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);max-width:100%}
-#defi{margin-top:1.2rem}#dflog{margin-top:1.4rem}
-.dfl{display:flex;justify-content:space-between;gap:1rem;padding:.45rem .2rem;border-bottom:1px dashed var(--line)}
-.dh{font:400 1rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:.9rem 0 .2rem}
-nav a.ext::after{content:" \2197"}
-main{max-width:1000px;margin:auto;padding:2rem 1rem 3rem}
-.rw{text-align:center;margin:2.2rem 0 1.4rem}
-.rw:first-child{margin-top:0}
-.rib{display:inline-block;position:relative;z-index:0;margin:0 1rem;padding:.35rem 1.6rem;background:var(--red);color:var(--card);font:400 1.6rem Anton,sans-serif;letter-spacing:.07em;text-transform:uppercase}
-.rib::before,.rib::after{content:"";position:absolute;z-index:-1;top:.55rem;width:1.4rem;height:100%;background:var(--dark)}
-.rib::before{left:-1rem;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,.7rem 50%)}
-.rib::after{right:-1rem;clip-path:polygon(0 0,100% 0,calc(100% - .7rem) 50%,100% 100%,0 100%)}
-.frame{border:3px solid var(--ink);outline:1px solid var(--ink);outline-offset:-10px;padding:1.6rem;background:#f8ecd6}
-.grid{display:grid;gap:1.6rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:center}
-.lead{font:400 1.55rem/1.25 "Abril Fatface",serif;margin:0 0 .6rem;color:var(--red)}
-.infos{list-style:none;padding:0;margin:1rem 0 0;display:grid;gap:.5rem}
-.infos li{border-left:4px solid var(--red);padding-left:.8rem}
-.infos b{font:400 .95rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase}
-.btn{display:inline-block;background:var(--red);color:var(--card);text-decoration:none;font:400 1.05rem Anton,sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:.7rem 1.4rem;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);transition:transform .12s,box-shadow .12s}
-.btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
-.btn.alt{background:var(--ink)}
-.btns{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:1.1rem}
-.polaroid{background:var(--card);padding:.8rem .8rem 1rem;box-shadow:0 6px 18px #5a3d1a40;margin:0}
-.polaroid.tilt{transform:rotate(2deg)}
-.polaroid figcaption{font:400 1rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-top:.6rem}
-.polaroid video{display:block;width:100%;background:#f9dca3}
-.next{margin-top:1.4rem;padding:.9rem 1.1rem;border:2px dashed var(--ink);background:#fff8}
-.next b{font-family:Anton,sans-serif;letter-spacing:.08em;text-transform:uppercase}
-.team{display:grid;gap:1.6rem;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
-.member{text-align:center}
-.member:nth-child(odd){transform:rotate(-1.2deg)}.member:nth-child(even){transform:rotate(1deg)}
-.ph{position:relative;aspect-ratio:4/5;background:#d9c4a1 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 100'%3E%3Ccircle cx='40' cy='38' r='15' fill='%23b9a27c'/%3E%3Cpath d='M10 100c0-24 13-36 30-36s30 12 30 36z' fill='%23b9a27c'/%3E%3C/svg%3E") center/70% no-repeat;border:1px solid var(--line)}
-.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.25) contrast(1.05)}
-.member h3{font:400 1.35rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:.8rem 0 0}
-.role{color:var(--red);font:italic 700 1rem "DM Sans",serif;margin:0 0 .4rem}
-.member p:last-child{font-size:.95rem;margin:0}
-.evs{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.ev{background:var(--card);box-shadow:0 6px 18px #5a3d1a40;display:flex;flex-direction:column}
-.ev img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;background:var(--line)}
-.evb{position:relative;padding:1rem 1rem 1.2rem;flex:1}
-.date{position:absolute;right:1rem;top:-2.2rem;background:var(--red);color:var(--card);text-align:center;width:3.6rem;padding:.3rem 0;border:2px solid var(--ink);font:400 .85rem/1 Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase}
-.date b{display:block;font-size:1.7rem;line-height:1.1}
-.ev h3{font:400 1.3rem Anton,sans-serif;letter-spacing:.05em;text-transform:uppercase;margin:0 3.6rem .2rem 0}
-.ev p{margin:.2rem 0;font-size:.95rem}.ev .lieu{font-style:italic;opacity:.8}
-.ev.past img{filter:grayscale(.55) sepia(.3)}
-.ev img{transition:filter .25s}
-/* évènements passés : la carte survolée grossit et retrouve ses couleurs, ses voisines grossissent un peu (effet loupe) */
-@media (hover:hover) and (prefers-reduced-motion:no-preference){
- .ev.past{position:relative;transition:transform .25s cubic-bezier(.2,.9,.3,1.25),box-shadow .25s}
- .ev.past:hover{transform:scale(1.09);z-index:3;box-shadow:0 16px 32px #5a3d1a66}
- .ev.past:hover img{filter:none}
- .ev.past:hover+.ev.past,.ev.past:has(+.ev.past:hover){transform:scale(1.035);z-index:2}
-}
-.ev.past .date{background:var(--ink)}
-.empty{padding:1.2rem;border:2px dashed var(--line);text-align:center}
-footer{background:var(--ink);color:var(--bg);text-align:center;padding:1.6rem 1rem;font-size:.9rem}
-footer img{width:56px;height:56px;border-radius:50%;margin-bottom:.4rem}
-footer a{color:var(--bg)}
-.btn{cursor:pointer}
-.btn.sm{font-size:.85rem;padding:.4rem .8rem;box-shadow:3px 3px 0 var(--ink)}
-.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.5rem 0}
-#lvf,.o input:not([type=checkbox]),.o textarea,#p-organisateur input{font:inherit;padding:.45rem .6rem;border:1.5px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);max-width:100%}
-.o textarea{width:100%;min-height:70px}
-.noimg{aspect-ratio:4/5;display:grid;place-items:center;background:var(--line)}
-.noimg img{width:40%;aspect-ratio:1;border-radius:50%}
-.lbw{overflow-x:auto}
-.lb{width:100%;border-collapse:collapse;background:var(--card);box-shadow:0 6px 18px #5a3d1a40}
-.lb th{background:var(--ink);color:var(--bg);font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.55rem .6rem;text-align:left}
-.lb td{padding:.55rem .6rem;border-bottom:1px dashed var(--line)}
-.lb td:first-child{font:400 1.3rem Anton,sans-serif;color:var(--red);width:3.4rem}
-.lb .pts{font:400 1.2rem Anton,sans-serif;text-align:right}
-.lb th.pts{font:400 .9rem Anton,sans-serif;letter-spacing:.1em;text-align:right}
-/* boules de billard : rangs 1 à 15 */
-.bl{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--c);box-shadow:inset -3px -4px 6px #0006,inset 3px 3px 5px #fff6,0 2px 3px #0006;vertical-align:middle}
-.bl.s{background:linear-gradient(180deg,#faf6ec 0 24%,var(--c) 24% 76%,#faf6ec 76%)}
-.bl b{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#faf6ec;color:#111;font:400 .7rem/1 Anton,sans-serif;letter-spacing:0;box-shadow:inset 0 -1px 2px #0003}
-.lbt{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem}
-.lbt button{font:400 .95rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.45rem 1rem;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer}
-.lbt button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
-.lb tr.top1 td{background:#f1d9a6}.lb tr.top2 td{background:#f6e7c7}.lb tr.top3 td{background:#f8efdc}
-.st{font-size:.9rem;opacity:.85}
-.oh{font:400 1.3rem Anton,sans-serif;letter-spacing:.06em;text-transform:uppercase;margin:0 0 .6rem;color:var(--red)}
-#orga .frame{margin-bottom:1.6rem}
-.oe{border:2px solid var(--ink);background:var(--card);padding:.8rem;margin:.9rem 0}
-.tag{font:400 .8rem Anton,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .6rem;border:2px solid var(--ink)}
-.tag.p{background:var(--ink);color:var(--bg)}.tag.u{background:var(--red);color:var(--card)}
-.mono{display:block;font-family:monospace;word-break:break-all;background:#fff;padding:.5rem;margin:.5rem 0}
-label.btn{display:inline-block}
-[hidden]{display:none!important}
-@media(max-width:560px){.stamp{display:none}nav a{padding:.7rem .6rem;font-size:.9rem}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
-.lbt[hidden]{display:none}.lbs{display:flex;gap:.6rem;align-items:center;margin:.9rem 0 .4rem}.lbs label{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem}.lbs select{font:inherit;font-size:1rem;padding:.45rem .8rem;border:2px solid var(--ink,#2b1d14);background:#fff8e8;color:inherit;border-radius:4px;cursor:pointer}
-</style>
-</head>
-<body>
-<header class="hero">
-<span class="top">★ Club de billard ★</span>
-<img class="logo" src="assets/logo.jpg" alt="Logo PoolNight">
-<h1>Pool<span>Night</span></h1>
-<p class="sub">EPITA/EPITECH Paris</p>
-<p class="slogan">Le billard et jeux de bar.</p>
-</header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PoolNight – Club de billard d'EPITA</title>
+    <meta
+      name="description"
+      content="PoolNight, club de billard d'EPITA : soirées, tournois et carte de membre."
+    />
+    <link rel="icon" href="assets/logo.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/index.css" />
+    <script defer src="js/dom.js"></script>
+    <script defer src="js/organizer-session.js"></script>
+    <script defer src="js/home/club.js"></script>
+    <script defer src="js/home/events.js"></script>
+    <script defer src="js/home/site-data.js"></script>
+    <script defer src="js/home/leaderboard.js"></script>
+    <script defer src="js/home/challenges.js"></script>
+    <script defer src="js/home/organizer.js"></script>
+    <script defer src="js/home/navigation.js"></script>
+    <script defer src="js/home/main.js"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <span class="top">★ Club de billard ★</span>
+      <img class="logo" src="assets/logo.jpg" alt="Logo PoolNight" />
+      <h1>Pool<span>Night</span></h1>
+      <p class="sub">EPITA/EPITECH Paris</p>
+      <p class="slogan">Le billard et jeux de bar.</p>
+    </header>
 
-<nav aria-label="Navigation principale">
-<a id="t-presentation" href="#presentation">Présentation</a>
-<a id="t-bureau" href="#bureau">Le bureau</a>
-<a id="t-tournois" href="#tournois">Tournois</a>
-<a id="t-evenements" href="#evenements">Évènements</a>
-<a id="t-classement" href="#classement">Classement</a>
-<div id="cue" class="off" aria-hidden="true"></div><div id="ball" class="off" aria-hidden="true"><i></i></div>
-</nav>
+    <nav aria-label="Navigation principale">
+      <a id="t-presentation" href="#presentation">Présentation</a>
+      <a id="t-bureau" href="#bureau">Le bureau</a>
+      <a id="t-tournois" href="#tournois">Tournois</a>
+      <a id="t-evenements" href="#evenements">Évènements</a>
+      <a id="t-classement" href="#classement">Classement</a>
+      <div id="cue" class="off" aria-hidden="true"></div>
+      <div id="ball" class="off" aria-hidden="true"><i></i></div>
+    </nav>
 
-<main>
-<section id="p-presentation">
-<div class="rw"><h2 class="rib">L’association</h2></div>
-<div class="frame">
-<p class="lead">Des soirées, du billard, des fléchettes et des jeux de bar.</p>
-<p>Bienvenue à PoolNight, l'association de billard de EPITA !
-PoolNight est une association étudiante dédiée à la promotion du billard sous toutes ses formes : billard français, américain, snooker, et plus encore.<br>Rejoindre PoolNight, c’est faire partie d’une communauté soudée de joueurs qui partagent l’amour du billard et l’envie de progresser ensemble !</p>
-<ul class="infos">
-<li><b>Où ?</b><br>After-works a EPITA et évènements au New Billard, 23 av. de Fontainebleau, 94270 Le Kremlin-Bicêtre</li>
-<li><b>Quand ?</b><br>Des soirées régulières, à retrouver dans l’onglet Évènements</li>
-</ul>
-</div>
+    <main>
+      <section id="p-presentation">
+        <div class="rw"><h2 class="rib">L’association</h2></div>
+        <div class="frame">
+          <p class="lead">
+            Des soirées, du billard, des fléchettes et des jeux de bar.
+          </p>
+          <p>
+            Bienvenue à PoolNight, l'association de billard de EPITA ! PoolNight
+            est une association étudiante dédiée à la promotion du billard sous
+            toutes ses formes : billard français, américain, snooker, et plus
+            encore.<br />Rejoindre PoolNight, c’est faire partie d’une
+            communauté soudée de joueurs qui partagent l’amour du billard et
+            l’envie de progresser ensemble !
+          </p>
+          <ul class="infos">
+            <li>
+              <b>Où ?</b><br />After-works a EPITA et évènements au New Billard,
+              23 av. de Fontainebleau, 94270 Le Kremlin-Bicêtre
+            </li>
+            <li>
+              <b>Quand ?</b><br />Des soirées régulières, à retrouver dans
+              l’onglet Évènements
+            </li>
+          </ul>
+        </div>
 
-<div class="rw rwst">
-<div class="stamp" aria-hidden="true"><span><b>-35%</b></span>New Billard</div>
-<h2 class="rib">Devenir membre</h2>
-</div>
-<div class="grid">
-<div>
-<p class="lead">Rejoins le club, reçois ta carte.</p>
-<p>La carte de membre te donne ta place dans l’association et une réduction de 35% au New Billard. L’adhésion se fait en ligne depuis notre lien.</p>
-<div class="btns"><a class="btn" href="https://www.helloasso.com/associations/epitas/evenements/adhesion-poolnight-2026">Devenir membre</a></div>
-</div>
-<figure class="polaroid tilt">
-<img src="assets/carte.gif" alt="Carte de membre PoolNight" style="width: 100%; max-width: 500px; height: auto;">
-<figcaption>Ta carte de membre</figcaption>
-</figure>
-</div>
+        <div class="rw rwst">
+          <div class="stamp" aria-hidden="true">
+            <span><b>-35%</b></span
+            >New Billard
+          </div>
+          <h2 class="rib">Devenir membre</h2>
+        </div>
+        <div class="grid">
+          <div>
+            <p class="lead">Rejoins le club, reçois ta carte.</p>
+            <p>
+              La carte de membre te donne ta place dans l’association et une
+              réduction de 35% au New Billard. L’adhésion se fait en ligne
+              depuis notre lien.
+            </p>
+            <div class="btns">
+              <a
+                class="btn"
+                href="https://www.helloasso.com/associations/epitas/evenements/adhesion-poolnight-2026"
+                >Devenir membre</a
+              >
+            </div>
+          </div>
+          <figure class="polaroid tilt">
+            <video
+              id="membership-card"
+              width="330"
+              height="200"
+              muted
+              loop
+              playsinline
+              preload="none"
+              poster="assets/carte-poster.jpg"
+              aria-label="Carte de membre PoolNight"
+            >
+              <source src="assets/carte.mp4" type="video/mp4" />
+              <img src="assets/carte.gif" alt="Carte de membre PoolNight" />
+            </video>
+            <figcaption>Ta carte de membre</figcaption>
+          </figure>
+        </div>
 
-<div class="rw"><h2 class="rib">Participer à l’évènement</h2></div>
-<div class="frame">
-<p class="lead">Viens jouer avec nous.</p>
-<p>Les inscriptions aux soirées et aux tournois se font via notre lien. Un seul endroit pour tout retrouver.</p>
-<div class="next" id="next" hidden></div>
-<div class="btns">
-<a class="btn" data-lt target="_blank" rel="noopener noreferrer">S’inscrire</a>
-<a class="btn alt" href="#tournois">Voir les tournois</a>
-<a class="btn alt" data-insta target="_blank" rel="noopener noreferrer">Instagram</a>
-</div>
-</div>
-</section>
+        <div class="rw"><h2 class="rib">Participer à l’évènement</h2></div>
+        <div class="frame">
+          <p class="lead">Viens jouer avec nous.</p>
+          <p>
+            Les inscriptions aux soirées et aux tournois se font via notre lien.
+            Un seul endroit pour tout retrouver.
+          </p>
+          <div class="next" id="next" hidden></div>
+          <div class="btns">
+            <a class="btn" data-lt target="_blank" rel="noopener noreferrer"
+              >S’inscrire</a
+            >
+            <a class="btn alt" href="#tournois">Voir les tournois</a>
+            <a
+              class="btn alt"
+              data-insta
+              target="_blank"
+              rel="noopener noreferrer"
+              >Instagram</a
+            >
+          </div>
+        </div>
+      </section>
 
-<section id="p-bureau" hidden>
-<div class="rw"><h2 class="rib">Le bureau</h2></div>
-<div class="team" id="team"></div>
-</section>
+      <section id="p-bureau" hidden>
+        <div class="rw"><h2 class="rib">Le bureau</h2></div>
+        <div class="team" id="team"></div>
+      </section>
 
-<section id="p-classement" hidden>
-<div class="rw"><h2 class="rib">Classement</h2></div>
-<div class="lbs"><label for="lbsp">Sport</label><select id="lbsp" onchange="spSet(this.value)" aria-label="Choisir le classement"><option value="billard">🎱 Billard</option><option value="flechettes">🎯 Fléchettes</option></select></div>
-<div class="lbt" id="lbtabs" role="group" aria-label="Type de classement"><button type="button" id="lbt-all" onclick="lbSet('all')">Général</button><button type="button" id="lbt-tournois" onclick="lbSet('tournois')">Tournois</button><button type="button" id="lbt-defis" onclick="lbSet('defis')">Défis</button></div>
-<div class="lbw" id="lb"></div>
-<p class="st" id="lbn"></p>
-<div class="btns"><button class="btn" onclick="defiOpen()">Défie tes amis</button></div>
-<div class="frame" id="defi" hidden></div>
-<div id="dflog"></div>
-</section>
+      <section id="p-classement" hidden>
+        <div class="rw"><h2 class="rib">Classement</h2></div>
+        <div class="lbs">
+          <label for="lbsp">Sport</label
+          ><select
+            id="lbsp"
+            onchange="spSet(this.value)"
+            aria-label="Choisir le classement"
+          >
+            <option value="billard">🎱 Billard</option>
+            <option value="flechettes">🎯 Fléchettes</option>
+          </select>
+        </div>
+        <div
+          class="lbt"
+          id="lbtabs"
+          role="group"
+          aria-label="Type de classement"
+        >
+          <button type="button" id="lbt-all" onclick="lbSet('all')">
+            Général</button
+          ><button type="button" id="lbt-tournois" onclick="lbSet('tournois')">
+            Tournois</button
+          ><button type="button" id="lbt-defis" onclick="lbSet('defis')">
+            Défis
+          </button>
+        </div>
+        <div class="lbw" id="lb"></div>
+        <p class="st" id="lbn"></p>
+        <div class="btns">
+          <button class="btn" onclick="defiOpen()">Défie tes amis</button>
+        </div>
+        <div class="frame" id="defi" hidden></div>
+        <div id="dflog"></div>
+      </section>
 
-<section id="p-tournois" hidden>
-<div class="rw"><h2 class="rib">Tournois</h2></div>
-<iframe id="ftour" title="Tournois PoolNight" style="display:block;width:100%;min-height:520px;border:0;background:transparent"></iframe>
-</section>
+      <section id="p-tournois" hidden>
+        <div class="rw"><h2 class="rib">Tournois</h2></div>
+        <iframe id="ftour" title="Tournois PoolNight"></iframe>
+      </section>
 
-<section id="p-organisateur" class="o" hidden>
-<div class="rw"><h2 class="rib">Organisateur</h2></div>
-<form id="login" class="frame" onsubmit="login(event)">
-<p class="lead">Espace réservé au bureau.</p>
-<div class="row"><input type="password" id="pw" placeholder="Mot de passe" autocomplete="current-password" aria-label="Mot de passe"><button class="btn" type="submit">Entrer</button></div>
-<p class="st" id="lerr" role="alert"></p>
-</form>
-<div id="orga" hidden></div>
-</section>
+      <section id="p-organisateur" class="o" hidden>
+        <div class="rw"><h2 class="rib">Organisateur</h2></div>
+        <form id="login" class="frame" onsubmit="login(event)">
+          <p class="lead">Espace réservé au bureau.</p>
+          <div class="row">
+            <input
+              type="password"
+              id="pw"
+              placeholder="Mot de passe"
+              autocomplete="current-password"
+              aria-label="Mot de passe"
+            /><button class="btn" type="submit">Entrer</button>
+          </div>
+          <p class="st" id="lerr" role="alert"></p>
+        </form>
+        <div id="orga" hidden></div>
+      </section>
 
-<section id="p-evenements" hidden>
-<div class="rw"><h2 class="rib">À venir</h2></div>
-<div class="evs" id="up"></div>
-<div class="rw"><h2 class="rib">Évènements passés</h2></div>
-<div class="evs" id="past"></div>
-</section>
-</main>
+      <section id="p-evenements" hidden>
+        <div class="rw"><h2 class="rib">À venir</h2></div>
+        <div class="evs" id="up"></div>
+        <div class="rw"><h2 class="rib">Évènements passés</h2></div>
+        <div class="evs" id="past"></div>
+      </section>
+    </main>
 
-<footer>
-<img src="assets/logo.jpg" alt="">
-<p>PoolNight · Club de billard · EPITA et EPITECH<br>
-<a data-insta target="_blank" rel="noopener noreferrer">Instagram @clubpoolnight</a> · <a href="#organisateur">Espace organisateur</a></p>
-</footer>
-
-<script>
-/* ===== À MODIFIER ===== */
-const LINKTREE='https://linktr.ee/clubpoolnight';                // lien du link-tree (vide = redirige vers Instagram)
-const INSTA='https://www.instagram.com/clubpoolnight?utm_source=ig_web_button_share_sheet&srtk=ZDNlZDc0MzIxNw==';
-const BUREAU=[
- {n:'Pierre-Louis Rouchette',r:'Président',d:'Mister WoWyde, au service des passionnés·ées de billard.',img:'assets/bureau-1.png'},
- {n:'Joseph Devin',r:'Vice-président',d:'"Je suis le bon jo 🪕"',img:'assets/bureau-2.png'},
- {n:'Adrien Le Berre',r:'Trésorier',d:'Trésorier sur le papier, tout le reste en vrai.',img:'assets/bureau-3.jpg'},
- {n:'Tanguy De-Jerphanion',r:'Respo dev',d:'Staff +++',img:'assets/bureau-4.png'}
-];
-const DEFAULT_EVENTS=[ /* date au format AAAA-MM-JJ. Une fois l'espace organisateur utilisé, c'est data.json qui fait foi. */
- {id:'e0',d:'2026-10-31',t:'Halloween Night',l:'',x:'Soirée billard spéciale Halloween.',img:'assets/ev-halloween.jpg'},
- {id:'e1',d:'2026-10-28',t:'Soirée PoolNight',l:'23 av. de Fontainebleau, 94270 Le Kremlin-Bicêtre',x:'Une soirée billard entre amis. Merci à tous ceux qui sont venus !',img:'assets/ev-28-octobre.jpg'},
- {id:'e2',d:'2026-10-14',t:'Soirée PoolNight',l:'',x:'Retour en images sur la soirée du 14 octobre.',img:'assets/ev-14-octobre.jpg'}
-];
-/* Espace organisateur : empreinte SHA-256 du mot de passe (mot de passe provisoire : billard2026).
-   Génère la tienne depuis l'espace organisateur, section « Mot de passe ». */
-const ORGA_HASH='b6ce38453fed226d97fc71a95036c434f6d69015ce7198a1747ad048503558c3';
-const ELO_START=1000,ELO_K=32,BONUS_WIN=5,BONUS_TITLE=25; /* paramètres du classement ELO (voir Systeme_ELO_Billard_Global.xlsx) */
-const DATA_PATH='data.json';
-/* ====================== */
-const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-document.querySelectorAll('[data-lt]').forEach(a=>a.href=LINKTREE||INSTA);
-document.querySelectorAll('[data-insta]').forEach(a=>a.href=INSTA);
-
-$('team').innerHTML=BUREAU.map(m=>`<article class="polaroid member"><div class="ph"><img src="${esc(m.img)}" alt="Photo de ${esc(m.n)}" loading="lazy" onerror="this.remove()"></div><h3>${esc(m.n)}</h3><p class="role">${esc(m.r)}</p><p>${esc(m.d)}</p></article>`).join('');
-
-const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const day=s=>{const [y,m,d]=(s||iso(new Date())).split('-').map(Number);return new Date(y,m-1,d)};
-const t0=new Date();t0.setHours(0,0,0,0);
-const ss=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}};
-let D={events:DEFAULT_EVENTS.map(e=>({...e})),results:[]};
-let dirty=false,auto=false,pubBusy=false,pubAgain=false,pubTimer;
-try{auto=localStorage.getItem('pn_auto')==='1'}catch(e){}
-
-/* ---------- évènements ---------- */
-const isPast=e=>e.p==='past'||(e.p!=='up'&&day(e.d)<t0);
-function noimg(el){el.outerHTML='<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}
-const card=(e,past)=>{const d=day(e.d);
- return `<article class="ev${past?' past':''}"${past?'':` onclick="window.open(LINKTREE||INSTA,'_blank','noopener')" onkeydown="if(event.key==='Enter')this.click()" tabindex="0" role="link" style="cursor:pointer"`}>${e.img?`<img src="${esc(e.img)}" alt="Affiche : ${esc(e.t)}" loading="lazy" onerror="noimg(this)">`:'<div class="noimg"><img src="assets/logo.jpg" alt=""></div>'}<div class="evb"><div class="date"><b>${d.getDate()}</b>${d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')}</div><h3>${esc(e.t)}</h3>${e.l?`<p class="lieu">${esc(e.l)}</p>`:''}<p>${esc(e.x)}</p></div></article>`};
-function renderEvents(){
- const up=D.events.filter(e=>!isPast(e)).sort((a,b)=>day(a.d)-day(b.d)),past=D.events.filter(isPast).sort((a,b)=>day(b.d)-day(a.d));
- $('up').innerHTML=up.length?up.map(e=>card(e,false)).join(''):'<div class="empty">Pas d’évènement annoncé pour le moment. Suis-nous sur Instagram pour les prochaines dates !</div>';
- $('past').innerHTML=past.length?past.map(e=>card(e,true)).join(''):'<div class="empty">Aucun évènement passé.</div>';
- const n=$('next');
- if(up.length){n.hidden=false;n.innerHTML=`Prochain rendez-vous : <b>${esc(up[0].t)}</b>, le ${day(up[0].d).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}.`}else n.hidden=true;
-}
-
-/* ---------- classement ELO ---------- */
-const real=i=>i&&i!=='-';
-const pkey=n=>norm(n).split(/\s+/).sort().join(' ');
-function podium(b){
- if(b.type==='de'){const [gf,rs]=b.secs[2].rounds.map(r=>r[0]);if(!real(gf.w))return[null,null];const m=gf.w===gf.a?gf:rs;return real(m.w)?[m.w,m.w===m.a?m.b:m.a]:[null,null]}
- const R=b.secs[0].rounds,f=R[R.length-1][0];return real(f.w)?[f.w,f.w===f.a?f.b:f.a]:[null,null];
-}
-/* Liste ordonnée des matchs réellement joués d'un tournoi (les byes ne comptent pas).
-   Ordre : horodatage de saisie (m.t) s'il existe partout, sinon ordre logique des tours. */
-function extractTournoi(t){
- if(!t||!Array.isArray(t.players)||!Array.isArray(t.brackets)||!t.brackets.length||t.brackets.some(b=>!b.secs))throw new Error('Format non reconnu : exporte tournoi.json depuis la dernière version de la page tournois, avec un tableau généré.');
- const P={},L=[],champs=[];let open=0,seq=0;t.players.forEach(p=>P[p.id]=p);
- const nm=id=>`${P[id].p} ${P[id].n}`.trim();
- t.brackets.forEach((b,bi)=>{
-  const add=(m,key)=>{if(real(m.a)&&real(m.b)&&real(m.w)&&P[m.a]&&P[m.b]&&m.a!==m.b)L.push({a:nm(m.a),b:nm(m.b),w:m.w===m.a?0:1,t:m.t,key,bi,seq:seq++})};
-  (b.groups||[]).forEach(g=>g.ms.forEach(m=>add(m,0)));
-  b.secs.forEach((s,si)=>s.rounds.forEach((R,r)=>R.forEach(m=>add(m,b.type==='po'?1+r:b.type==='de'?(si===0?2*r:si===1?r+1.5:1000+r):r))));
-  const ch=podium(b)[0];if(ch&&P[ch])champs.push(nm(ch));else open++;
- });
- const ts=L.length>0&&L.every(x=>typeof x.t==='number');
- L.sort(ts?(x,y)=>x.t-y.t||x.seq-y.seq:(x,y)=>x.key-y.key||x.bi-y.bi||x.seq-y.seq);
- return {matches:L.map(x=>({a:x.a,b:x.b,w:x.w})),open,champs};
-}
-/* ELO : EA = 1/(1+10^((ELO_B-ELO_A)/400)) ; delta = K*(score-EA) ; B reçoit -delta. Tout est rejoué du premier au dernier match. */
-function board(src='all',sp=SP){
- const P={};
-/* Orthographes différentes d'un même joueur : « variante » → nom affiché. Ajoute une ligne par joueur concerné. */
- const ALIAS={'Virgile HOQUET-GALLET':'Virgile Hocquet-Gallet'},AL={};Object.keys(ALIAS).forEach(k=>AL[pkey(k)]=ALIAS[k]);
- const get=nm=>{nm=AL[pkey(nm)]||nm;return P[pkey(nm)]||(P[pkey(nm)]={name:nm,elo:ELO_START,m:0,v:0,d:0})};
- const play=m=>{
-   const A=get(m.a),B=get(m.b);if(A===B)return;
-   const sa=m.w===0?1:0,ea=1/(1+Math.pow(10,(B.elo-A.elo)/400)),d=ELO_K*(sa-ea);
-   A.elo+=d;B.elo-=d;(sa?A:B).elo+=BONUS_WIN;A.m++;B.m++;if(sa){A.v++;B.d++}else{B.v++;A.d++}
- },ev=[];
- if(sp==='billard'&&src!=='defis')D.results.forEach(t=>{if(Array.isArray(t.matches))ev.push({ts:new Date((t.date||'')+'T12:00:00').getTime()||0,t})});
- if(src!=='tournois')CH.filter(d=>d.status==='confirmed'&&(d.sp||'billard')===sp).forEach(d=>ev.push({ts:d.tc||d.t||0,d}));
- ev.sort((x,y)=>x.ts-y.ts);   /* tri stable : à date égale, l'ordre d'enregistrement est conservé */
- ev.forEach(e=>{if(e.t){e.t.matches.forEach(play);(e.t.champs||[]).forEach(n=>{get(n).elo+=BONUS_TITLE})}else play({a:e.d.a,b:e.d.b,w:e.d.w})});
- return Object.values(P).sort((a,b)=>b.elo-a.elo||b.v-a.v||a.name.localeCompare(b.name));
-}
-const BALLC=['#f2c200','#1f4fa8','#d3291f','#5b2a86','#ee7a14','#1f7a3a','#7a1f1f','#141414'];
-const ball=n=>`<span class="bl${n>8?' s':''}" style="--c:${BALLC[(n-1)%8]}" role="img" aria-label="Rang ${n}"><b>${n}</b></span>`;
-let LB='all',SP='billard';
-const SPN={billard:'Billard',flechettes:'Fléchettes'};
-function lbSet(m){LB=m;renderBoard()}
-function spSet(v){const o=SP;SP=v==='flechettes'?'flechettes':'billard';if(SP==='flechettes')LB='defis';else if(o==='flechettes')LB='all';renderBoard();renderDefiLog();if($('dsp'))$('dsp').value=SP}
-function dSport(v){spSet(v)}
-function renderBoard(){
- const fl=SP==='flechettes';if(fl)LB='defis';
- const sel=$('lbsp');if(sel)sel.value=SP;
- const tb=$('lbtabs');if(tb)tb.hidden=fl;
- const rows=board(LB);
- ['all','tournois','defis'].forEach(k=>{const b=$('lbt-'+k);if(b)b.setAttribute('aria-pressed',k===LB)});
- const empty=fl?{defis:'Aucun défi de fléchettes confirmé pour l’instant. Lance le premier avec « Défie un ami ».'}:{all:'Le classement apparaîtra après le premier tournoi importé.',tournois:'Aucun tournoi importé pour l’instant.',defis:'Aucun défi confirmé pour l’instant.'}[LB];
- $('lb').innerHTML=rows.length?`<table class="lb"><tr><th>#</th><th>Joueur</th><th class="pts">ELO</th><th>Matchs</th><th>Victoires</th><th>Défaites</th><th>Win rate</th><th>Variation</th></tr>${rows.map(x=>{
-  const rk=1+rows.filter(y=>y.elo>x.elo).length,dv=Math.round(x.elo-ELO_START);
-  return `<tr class="${rk<4?'top'+rk:''}"><td>${rk<=15?ball(rk):rk}</td><td>${esc(x.name)}</td><td class="pts">${Math.round(x.elo)}</td><td>${x.m}</td><td>${x.v}</td><td>${x.d}</td><td>${Math.round(100*x.v/x.m)} %</td><td>${dv>0?'+':''}${dv}</td></tr>`}).join('')}</table>`
-  :`<div class="empty">${empty}</div>`;
- const base=`Chaque joueur démarre à ${ELO_START} points. Chaque match joué compte (coefficient K = ${ELO_K}), plus ${BONUS_WIN} points par victoire`;
- $('lbn').textContent=fl?`Classement fléchettes : ELO calculé uniquement avec les défis de fléchettes confirmés par l’adversaire. ${base}.`:{
-  all:`Classement ELO général (tournois et défis) : ${base} et ${BONUS_TITLE} points pour chaque titre de tournoi. Les défis entre joueurs comptent une fois confirmés par l’adversaire.`,
-  tournois:`Classement des tournois : ELO calculé uniquement avec les matchs de tournoi. ${base} et ${BONUS_TITLE} points pour chaque titre.`,
-  defis:`Classement des défis : ELO calculé uniquement avec les défis confirmés. ${base}.`}[LB];
-}
-
-/* ---------- défis entre joueurs ---------- */
-const API=location.protocol==='file:'?'https://pool-night.netlify.app':'';   /* même adresse que le site ; l'adresse complète ne sert que pour ouvrir le fichier en local */
-const DEFI_API=API+'/api/defis';
-let CH=[],DP=null,VAL=false;
-const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-async function dApi(body,okey){
- const h={'content-type':'application/json'};if(okey)h['x-organizer-key']=okey;
- let r;try{r=await fetch(DEFI_API,{method:'POST',headers:h,body:JSON.stringify(body)})}catch(e){throw new Error('Impossible de joindre le serveur des défis.')}
- const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Erreur '+r.status);return j}
-async function loadDefis(){
- try{const r=await fetch(DEFI_API+'?'+Date.now());if(!r.ok)return;const j=await r.json();CH=Array.isArray(j.defis)?j.defis:[];VAL=!!j.validation}catch(e){return}
- renderBoard();renderDefiLog();renderMine();defiCheck()}
-const defiLink=x=>(location.protocol==='file:'?location.href.split('#')[0]:location.origin+location.pathname)+'#classement?defi='+x.id+'&k='+x.ck;
-const mineOf=id=>(lsGet('pn_defis')||[]).find(x=>x.id===id);
-function defiOpen(){DP=null;$('defi').hidden=false;renderDefiForm();$('defi').scrollIntoView({behavior:'smooth',block:'start'})}
-function defiClose(){$('defi').hidden=true}
-function defiLeave(){DP=null;$('defi').hidden=true;try{history.replaceState(null,'','#classement')}catch(e){}}
-function renderDefiForm(){
- const me=lsGet('pn_me')||'',names=[...new Set([...board('all','billard'),...board('all','flechettes')].map(x=>x.name))];
- $('defi').innerHTML=`<h3 class="oh">Défie un ami</h3>
-<p class="st">Joue ton match, saisis le résultat puis envoie le lien à ton adversaire. Le match compte pour l’ELO dès qu’il le confirme.</p>
-<datalist id="dnames">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
-<div class="row"><select id="dsp" aria-label="Sport" onchange="dSport(this.value)"><option value="billard"${SP==='billard'?' selected':''}>🎱 Billard</option><option value="flechettes"${SP==='flechettes'?' selected':''}>🎯 Fléchettes</option></select></div>
-<div class="row"><input id="dme" list="dnames" value="${esc(me)}" placeholder="Ton Prénom NOM" aria-label="Ton nom"><input id="dop" list="dnames" placeholder="Prénom NOM de l’adversaire" aria-label="Nom de l’adversaire"></div>
-<div class="row"><select id="dw" aria-label="Résultat"><option value="0">J’ai gagné</option><option value="1">J’ai perdu</option></select><input id="dsc" placeholder="Score (facultatif) ex. 5-3" maxlength="10" aria-label="Score"></div>
-<div class="row"><button class="btn" id="dgo" onclick="defiSend()">Envoyer le défi</button><button class="btn alt sm" onclick="defiClose()">Fermer</button></div>
-<p class="st" id="dmsg" role="status"></p><div id="dmine"></div>`;
- renderMine()}
-async function defiSend(){
- const a=$('dme').value.trim(),b=$('dop').value.trim(),w=+$('dw').value,score=$('dsc').value.trim(),m=$('dmsg');
- m.textContent='';$('dgo').disabled=true;
- try{const r=await dApi({action:'create',sp:$('dsp').value,a,b,w,score});
-  lsSet('pn_me',a);const L=lsGet('pn_defis')||[];L.unshift({id:r.id,ck:r.ck,dk:r.dk,a,b,w,score,t:Date.now()});lsSet('pn_defis',L.slice(0,30));
-  await loadDefis();m.textContent='Défi enregistré ! Envoie le lien à '+b+' (lien ci-dessous) pour qu’il le confirme.';
-  $('dop').value='';$('dsc').value=''}
- catch(e){m.textContent=e.message}
- $('dgo').disabled=false}
-function renderMine(){
- const el=$('dmine');if(!el)return;
- const L=(lsGet('pn_defis')||[]).map(x=>({x,d:CH.find(c=>c.id===x.id)||(x.a&&Date.now()-x.t<12e4?{id:x.id,a:x.a,b:x.b,w:x.w,score:x.score,status:'pending'}:null)})).filter(y=>y.d).slice(0,6);
- el.innerHTML=L.length?'<h4 class="dh">Mes défis</h4>'+L.map(({x,d})=>{
-  const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a,st={pending:'En attente de '+d.b,awaiting:'Validation du bureau en cours',confirmed:'Confirmé',rejected:'Contesté',expired:'Expiré'}[d.status]||d.status;
-  return `<div class="oe"><div class="row"><span>${d.sp==='flechettes'?'🎯 ':''}<b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span class="tag ${d.status==='pending'?'u':'p'}">${esc(st)}</span></div>${d.status==='pending'?`<div class="row"><input readonly value="${esc(defiLink(x))}" onclick="this.select()" aria-label="Lien à envoyer à l’adversaire" style="flex:1;min-width:14rem"></div><div class="row"><button class="btn sm" onclick="defiShare('${x.id}')">Partager le lien</button><button class="btn alt sm" onclick="defiCopy('${x.id}')">Copier le lien</button><button class="btn alt sm" onclick="defiCancel('${x.id}')">Annuler</button></div>`:''}</div>`}).join(''):''}
-async function defiCopy(id){
- const x=mineOf(id);if(!x)return;const u=defiLink(x),m=$('dmsg');
- try{await navigator.clipboard.writeText(u);if(m)m.textContent='Lien copié.'}catch(e){prompt('Copie ce lien :',u)}}
-function defiShare(id){
- const x=mineOf(id),d=CH.find(c=>c.id===id);if(!x||!d)return;
- const text=`${d.a} ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'} à PoolNight. Confirme le résultat :`;
- if(navigator.share)navigator.share({title:'Défi PoolNight',text,url:defiLink(x)}).catch(()=>{});else defiCopy(id)}
-async function defiCancel(id){
- const x=mineOf(id);if(!x)return;
- try{await dApi({action:'cancel',id,dk:x.dk});lsSet('pn_defis',(lsGet('pn_defis')||[]).filter(y=>y.id!==id));await loadDefis()}
- catch(e){const m=$('dmsg');if(m)m.textContent=e.message}}
-function defiCheck(){
- if(!DP)return;
- const d=CH.find(c=>c.id===DP.id),el=$('defi');el.hidden=false;
- if(!d){el.innerHTML='<h3 class="oh">Défi introuvable</h3><p class="st">Ce lien n’est plus valable.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>';return}
- el.innerHTML=`<h3 class="oh">Confirme un défi</h3><p class="lead">${d.sp==='flechettes'?'🎯 Fléchettes · ':''}<b>${esc(d.a)}</b> ${d.w===0?'dit t’avoir battu':'dit avoir perdu contre toi'}${d.score?' ('+esc(d.score)+')':''}.</p><p class="st">Défi adressé à ${esc(d.b)}.</p>`
-  +(d.status==='pending'?`<p class="st">Si c’est exact, confirme : le match sera compté dans l’ELO des deux joueurs.</p><div class="row"><button class="btn" onclick="defiAnswer(true)">C’est exact</button><button class="btn alt" onclick="defiAnswer(false)">Je conteste</button></div><p class="st" id="dmsg" role="status"></p>`
-   :`<p class="st">Ce défi est déjà ${{confirmed:'confirmé',awaiting:'confirmé, en attente de validation du bureau',rejected:'contesté',expired:'expiré'}[d.status]||'clos'}.</p><button class="btn alt sm" onclick="defiLeave()">Fermer</button>`)}
-async function defiAnswer(ok){
- if(!DP)return;
- try{await dApi({action:'confirm',id:DP.id,ck:DP.k,accept:ok});await loadDefis()}
- catch(e){const m=$('dmsg');if(m)m.textContent=e.message}}
-function renderDefiLog(){
- const c=CH.filter(d=>d.status==='confirmed'&&(d.sp||'billard')===SP).sort((a,b)=>(b.tc||b.t)-(a.tc||a.t)).slice(0,8),p=CH.filter(d=>d.status==='pending'||d.status==='awaiting').length;
- $('dflog').innerHTML=c.length||p?'<h3 class="oh">Derniers défis</h3>'+c.map(d=>{const w=d.w===0?d.a:d.b,l=d.w===0?d.b:d.a;return `<div class="dfl"><span><b>${esc(w)}</b> bat ${esc(l)}${d.score?' ('+esc(d.score)+')':''}</span><span>${new Date(d.tc||d.t).toLocaleDateString('fr-FR')}</span></div>`}).join('')+(p?`<p class="st">${p} défi${p>1?'s':''} en attente de confirmation ou de validation.</p>`:''):''}
-/* espace orga : corriger ou supprimer les défis */
-const okey=()=>{const v=$('okey')?$('okey').value:(ss('pn_okey')||'');try{sessionStorage.setItem('pn_okey',v)}catch(e){}return v};
-function orgaDefis(){
- const sel=(v,arr)=>arr.map(([k,t])=>`<option value="${k}"${String(v)===String(k)?' selected':''}>${t}</option>`).join('');
- const rows=CH.map(d=>`<div class="oe"><div class="row"><select id="osp_${d.id}" aria-label="Sport"><option value="billard"${(d.sp||'billard')==='billard'?' selected':''}>Billard</option><option value="flechettes"${d.sp==='flechettes'?' selected':''}>Fléchettes</option></select><input id="oa_${d.id}" value="${esc(d.a)}" aria-label="Joueur A"><span>contre</span><input id="ob_${d.id}" value="${esc(d.b)}" aria-label="Joueur B"></div>
-<div class="row"><select id="ow_${d.id}" aria-label="Vainqueur">${sel(d.w,[[0,'A gagne'],[1,'B gagne']])}</select><input id="os_${d.id}" value="${esc(d.score||'')}" placeholder="Score" size="7" aria-label="Score"><select id="ot_${d.id}" aria-label="Statut">${sel(d.status,[['pending','En attente'],['awaiting','À valider (confirmé par l’adversaire)'],['confirmed','Confirmé'],['rejected','Contesté'],['void','Annulé par l’orga'],['expired','Expiré']])}</select></div>
-<div class="row"><span class="st">Déclaré le ${new Date(d.t).toLocaleString('fr-FR')}${d.tc?' · traité le '+new Date(d.tc).toLocaleString('fr-FR'):''}${d.edited?' · modifié par l’orga':''}</span>${d.status==='awaiting'?`<button class="btn sm" onclick="defiOrgaValidate('${d.id}')">Valider</button>`:''}<button class="btn sm" onclick="defiOrgaSave('${d.id}')">Enregistrer</button><button class="btn alt sm" onclick="defiOrgaDel('${d.id}')">Supprimer</button></div></div>`).join('');
- return `<div class="frame"><h3 class="oh">Défis des joueurs</h3><p class="st">Tous les défis déclarés. Si un résultat est truqué : change le vainqueur, passe-le en « Annulé » ou supprime-le, l’ELO est recalculé aussitôt pour tout le monde. Seul un défi « Confirmé » compte. A est le joueur qui a déclaré le défi.</p>
-<div class="row"><label><input type="checkbox" id="oval"${VAL?' checked':''} onchange="defiOrgaCfg(this.checked)"> Validation obligatoire par le bureau (un défi confirmé par l’adversaire ne compte qu’après ton « Valider »)</label></div>
-<div class="row"><button class="btn alt sm" onclick="okey();loadDefis().then(renderOrga)">Actualiser la liste</button></div>
-<p class="st" id="odmsg" role="status"></p>${rows||'<p class="st">Aucun défi pour le moment.</p>'}</div>`}
-async function defiOrgaSave(id){
- const g=k=>$(k+'_'+id).value,m=$('odmsg');
- try{await dApi({action:'orga_update',id,sp:g('osp'),a:g('oa'),b:g('ob'),w:+g('ow'),score:g('os'),status:g('ot')==='expired'?'pending':g('ot')},okey());
-  await loadDefis();renderOrga();$('odmsg').textContent='Enregistré, ELO recalculé.'}
- catch(e){m.textContent=e.message}}
-function defiOrgaValidate(id){$('ot_'+id).value='confirmed';defiOrgaSave(id)}
-async function defiOrgaCfg(v){
- try{await dApi({action:'orga_config',validation:v},okey());VAL=v;$('odmsg').textContent=v?'Validation du bureau activée.':'Validation du bureau désactivée.'}
- catch(e){$('oval').checked=!v;$('odmsg').textContent=e.message}}
-async function defiOrgaDel(id){
- if(!confirm('Supprimer définitivement ce défi ?'))return;
- try{await dApi({action:'orga_delete',id},okey());await loadDefis();renderOrga();$('odmsg').textContent='Défi supprimé, ELO recalculé.'}
- catch(e){$('odmsg').textContent=e.message}}
-
-/* ---------- espace organisateur ---------- */
-async function sha(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function login(ev){
- ev.preventDefault();
- try{
-  if(await sha($('pw').value)===ORGA_HASH){try{sessionStorage.setItem('pn_orga','1')}catch(e){}$('pw').value='';$('lerr').textContent='';show()}
-  else $('lerr').textContent='Mot de passe incorrect.';
- }catch(e){$('lerr').textContent='Connexion impossible : ouvre le site en https (ou en local avec un serveur).'}
-}
-function logout(){try{sessionStorage.removeItem('pn_orga')}catch(e){}show()}
-const st=t=>{const s=$('ost');if(s)s.textContent=t};
-function touch(){
- dirty=true;st('Modifications non publiées.');clearTimeout(pubTimer);
- if(auto&&okey())pubTimer=setTimeout(publish,1500);
-}
-const ev=id=>D.events.find(e=>e.id===id);
-function evSet(id,k,v){ev(id)[k]=v;touch();renderEvents()}
-function evAdd(){D.events.push({id:'e'+Date.now(),d:iso(new Date()),t:'Nouvel évènement',l:'',x:'',img:''});touch();renderEvents();renderOrga()}
-function evDel(id){if(confirm('Supprimer cet évènement ?')){D.events=D.events.filter(e=>e.id!==id);touch();renderEvents();renderOrga()}}
-function evMove(id){const e=ev(id);e.p=isPast(e)?'up':'past';touch();renderEvents();renderOrga()}
-const autoSave=v=>{auto=v;try{localStorage.setItem('pn_auto',v?'1':'0')}catch(e){}};
-async function apiOrga(path,method,body,type){
- const k=okey();if(!k)throw new Error('saisis la clé organisateur');
- let r;try{r=await fetch(API+path,{method,headers:Object.assign({'x-organizer-key':k},type?{'content-type':type}:{}),body})}catch(e){throw new Error('serveur injoignable')}
- if(r.status===401||r.status===403)throw new Error('clé organisateur incorrecte');
- if(r.status===429)throw new Error('trop d’essais, réessaie dans une heure');
- if(!r.ok)throw new Error('code '+r.status);return r}
-async function checkKey(){
- const m=$('kmsg');m.textContent='Vérification…';
- try{await apiOrga('/api/tournoi','POST');m.textContent='Clé valide.'}catch(e){m.textContent='Échec : '+e.message+'.'}}
-async function publish(){
- if(pubBusy){pubAgain=true;return}
- pubBusy=true;st('Publication en cours…');
- try{await apiOrga('/api/donnees','PUT',JSON.stringify(D),'application/json');dirty=false;st('Publié à '+new Date().toLocaleTimeString('fr-FR')+'. Visible tout de suite.')}
- catch(e){st('Échec de la publication ('+e.message+').')}
- pubBusy=false;if(pubAgain){pubAgain=false;publish()}
-}
-async function upImg(id,input){
- const f=input.files[0];if(!f)return;
- try{
-  st('Téléversement de l’affiche…');
-  const bm=await createImageBitmap(f),s=Math.min(1,900/bm.width),c=document.createElement('canvas');
-  c.width=Math.round(bm.width*s);c.height=Math.round(bm.height*s);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
-  const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.85));
-  const name='ev-'+Date.now()+'.jpg';
-  await apiOrga('/api/affiche/'+name,'PUT',blob,'image/jpeg');
-  evSet(id,'img','/api/affiche/'+name);renderOrga();st('Affiche téléversée. Pense à publier pour l’associer à l’évènement.');
- }catch(e){st('Échec du téléversement ('+e.message+').')}
-}
-function exportData(){
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,1)],{type:'application/json'}));a.download='data.json';a.click();
-}
-function addResult(t){
- let r;try{r=extractTournoi(t)}catch(e){return alert(e.message)}
- if(!r.matches.length)return alert('Aucun match joué dans ce tournoi.');
- if(r.open&&!confirm(r.open+' tableau(x) sans vainqueur (tournoi non terminé ?). Importer quand même ?'))return;
- const name=$('rn').value.trim()||'Tournoi',date=$('rd').value||iso(new Date()),id=name+'|'+date;
- D.results=D.results.filter(x=>x.id!==id);D.results.push({id,name,date,matches:r.matches,champs:r.champs});
- touch();renderBoard();renderOrga();
-}
-function importFile(i){const f=i.files[0];if(f)f.text().then(x=>addResult(JSON.parse(x))).catch(()=>alert('Fichier illisible.'))}
-async function importRemote(){
- try{const r=await fetch(API+'/api/tournoi',{cache:'no-store'});const j=r.ok?await r.json():null;if(j){addResult(j);return}}catch(e){}
- alert('Aucun tournoi publié sur la page tournois (ou lecture impossible). Génère un tableau depuis l’onglet Tournois, ou charge tournoi.json avec « Importer un fichier ».');
-}
-async function renameP(){
- const a=$('rnA').value.trim(),b=$('rnB').value.trim(),m=$('rnmsg');
- if(a.length<2||b.length<2){m.textContent='Renseigne le nom à remplacer et le nom correct.';return}
- const ka=pkey(a),fx=x=>pkey(x)===ka?b:x;let n=0;
- D.results.forEach(t=>{
-  (t.matches||[]).forEach(x=>{if(pkey(x.a)===ka){x.a=b;n++}if(pkey(x.b)===ka){x.b=b;n++}});
-  if(t.champs)t.champs=t.champs.map(c=>{if(pkey(c)===ka)n++;return fx(c)});
- });
- if(n)touch();
- let nd=0,err='';
- for(const d of CH.filter(d=>pkey(d.a)===ka||pkey(d.b)===ka)){
-  try{await dApi({action:'orga_update',id:d.id,sp:d.sp||'billard',a:fx(d.a),b:fx(d.b),w:d.w,score:d.score||'',status:d.status==='expired'?'pending':d.status},okey());nd++}
-  catch(e){err=' Défis non modifiés : '+e.message+'.';break}
- }
- if(nd)await loadDefis();
- renderBoard();renderOrga();
- $('rnmsg').textContent=(n||nd?`${n} occurrence(s) renommée(s) dans les tournois, ${nd} défi(s) modifié(s).`+(n?' Publie pour que ça apparaisse sur le site.':''):'Aucun joueur trouvé avec ce nom.')+err;
-}
-function resDel(i){if(confirm('Retirer ce tournoi du classement ?')){D.results.splice(i,1);touch();renderBoard();renderOrga()}}
-async function makeHash(){try{$('hout').textContent=await sha($('npw').value)}catch(e){$('hout').textContent='Indisponible hors https.'}}
-function renderOrga(){
- const e2=e=>{const p=isPast(e);return `<div class="oe"><div class="row"><input type="date" value="${esc(e.d)}" oninput="evSet('${e.id}','d',this.value)" aria-label="Date"><input value="${esc(e.t)}" placeholder="Titre" oninput="evSet('${e.id}','t',this.value)" aria-label="Titre"><input value="${esc(e.l)}" placeholder="Lieu" oninput="evSet('${e.id}','l',this.value)" aria-label="Lieu"></div>
-<textarea placeholder="Description" oninput="evSet('${e.id}','x',this.value)" aria-label="Description">${esc(e.x)}</textarea>
-<div class="row"><input value="${esc(e.img||'')}" placeholder="assets/affiche.jpg" oninput="evSet('${e.id}','img',this.value)" aria-label="Chemin de l’affiche"><label class="btn alt sm">Téléverser une affiche<input type="file" accept="image/*" hidden onchange="upImg('${e.id}',this)"></label></div>
-<div class="row"><span class="tag ${p?'p':'u'}">${p?'Passé':'À venir'}</span><button class="btn alt sm" onclick="evMove('${e.id}')">${p?'Remettre à venir':'Passer en évènement passé'}</button><button class="btn sm" onclick="evDel('${e.id}')">Supprimer</button></div></div>`};
- $('orga').innerHTML=`<div class="frame"><h3 class="oh">Clé organisateur</h3><p class="st">Nécessaire pour publier, téléverser une affiche et corriger les défis. C’est la même clé que celle de l’onglet Tournois. Elle reste seulement dans cet onglet du navigateur.</p><div class="row"><input id="okey" type="password" value="${esc(ss('pn_okey')||'')}" placeholder="Clé organisateur" autocomplete="off" aria-label="Clé organisateur" onchange="okey()"><button class="btn alt sm" onclick="okey();checkKey()">Vérifier la clé</button></div><p class="st" id="kmsg" role="status"></p></div>
-<div class="frame"><h3 class="oh">Évènements</h3><button class="btn" onclick="evAdd()">Ajouter un évènement</button>${[...D.events].sort((a,b)=>day(b.d)-day(a.d)).map(e2).join('')}</div>
-<div class="frame"><h3 class="oh">Classement</h3><p class="st">Après chaque tournoi, exporte tournoi.json depuis la page tournois, puis importe-le ici. Chaque match joué met à jour l’ELO des deux joueurs (les byes ne comptent pas). L’ordre des matchs est celui de la saisie des résultats, ou à défaut l’ordre logique des tours. Pour corriger un résultat, corrige-le dans la page tournois puis réimporte le fichier avec le même nom et la même date.</p>
-<div class="row"><input id="rn" placeholder="Nom du tournoi" aria-label="Nom du tournoi"><input id="rd" type="date" value="${iso(new Date())}" aria-label="Date du tournoi"></div>
-<div class="row"><label class="btn alt sm">Importer un fichier<input type="file" accept=".json" hidden onchange="importFile(this)"></label><button class="btn alt sm" onclick="importRemote()">Importer depuis le site tournois</button></div>
-${D.results.map((t,i)=>`<div class="row"><span>${esc(t.name)} · ${day(t.date).toLocaleDateString('fr-FR')} · ${t.matches?t.matches.length+' matchs':'ancien format, non compté'}</span><button class="btn sm" onclick="resDel(${i})">Retirer</button></div>`).join('')||'<p class="st">Aucun tournoi importé.</p>'}</div>
-<div class="frame"><h3 class="oh">Corriger un nom de joueur</h3><p class="st">Remplace une orthographe par une autre dans tous les tournois enregistrés et dans les défis (majuscules, accents et ordre prénom/nom sont déjà ignorés). Les défis modifiés sont enregistrés tout de suite ; pour les tournois, pense à publier ensuite.</p>
-<div class="row"><input id="rnA" placeholder="Nom à remplacer (ex. Virgile HOQUET-GALLET)" aria-label="Nom à remplacer"><input id="rnB" placeholder="Nom correct (ex. Virgile Hocquet-Gallet)" aria-label="Nom correct"><button class="btn" onclick="renameP()">Renommer</button></div>
-<p class="st" id="rnmsg" role="status"></p></div>
-${orgaDefis()}<div class="frame"><h3 class="oh">Publication</h3><p class="st">Les évènements et résultats publiés sont visibles tout de suite par tout le monde (aucun déploiement nécessaire).</p>
-<div class="row"><label><input type="checkbox" id="ga"${auto?' checked':''} onchange="autoSave(this.checked)"> Publier automatiquement</label></div>
-<div class="row"><button class="btn" onclick="okey();publish()">Publier</button><button class="btn alt sm" onclick="exportData()">Exporter data.json</button></div>
-<p class="st" id="ost" role="status">${dirty?'Modifications non publiées.':''}</p></div>
-<div class="frame"><h3 class="oh">Mot de passe</h3><p class="st">Saisis un nouveau mot de passe, copie l’empreinte obtenue dans la constante ORGA_HASH de poolnight.html, puis republie le site.</p>
-<div class="row"><input id="npw" type="text" placeholder="Nouveau mot de passe" aria-label="Nouveau mot de passe"><button class="btn alt sm" onclick="makeHash()">Générer l’empreinte</button></div><code class="mono" id="hout"></code>
-<div class="row"><button class="btn sm" onclick="logout()">Se déconnecter</button></div></div>`;
-}
-
-/* queue de billard sous l'onglet actif : au changement d'onglet, elle pousse la boule jusqu'au nouvel onglet */
-const cueEl=$('cue'),ballEl=$('ball'),ballIn=ballEl.firstElementChild,CD=12,CT=8;
-let cueTab=null,cueF=1,cueRun=0,cueAnims=[];
-const calm=matchMedia('(prefers-reduced-motion:reduce)'),sleep=ms=>new Promise(f=>setTimeout(f,ms));
-function cueRest(a,f){const L=a.offsetLeft,W=a.offsetWidth,sw=Math.max(20,W-12-CD),y=a.offsetTop+a.offsetHeight-4;
- return f>0?{sl:L+6,sw,bl:L+6+sw,y}:{bl:L+6,sl:L+6+CD,sw,y}}
-function cueApply(r,f){cueEl.style.cssText=`left:${r.sl}px;top:${r.y}px;width:${r.sw}px;transform:scaleX(${f})`;ballEl.style.cssText=`left:${r.bl}px;top:${r.y-(CD-CT)/2}px`;ballIn.style.transform=''}
-function cueAnim(el,kf,ms,ease,delay){const an=el.animate(kf,{duration:ms,easing:ease,delay:delay||0,fill:'forwards'});cueAnims.push(an);return an.finished}
-async function moveCue(a){
- const my=++cueRun;
- cueAnims.forEach(x=>x.cancel());cueAnims=[];
- if(!a){cueEl.classList.add('off');ballEl.classList.add('off');cueTab=null;return}
- const prev=cueTab,off=cueEl.classList.contains('off');
- if(prev&&!off)cueApply(cueRest(prev,cueF),cueF);   /* si une animation était en cours : on la termine d'un coup */
- const dir=prev?(Math.sign(a.offsetLeft-prev.offsetLeft)||1):1;
- if(!prev||off||a===prev||calm.matches){cueTab=a;cueApply(cueRest(a,cueF),cueF);cueEl.classList.remove('off');ballEl.classList.remove('off');return}
- const live=()=>my===cueRun;
- let f=cueF,r0=cueRest(prev,f);
- cueTab=a;
- try{
-  if(f!==dir){   /* la queue se retourne côté sens de marche */
-   cueEl.classList.add('off');ballEl.classList.add('off');await sleep(210);if(!live())return;
-   f=dir;r0=cueRest(prev,f);cueApply(r0,f);cueEl.classList.remove('off');ballEl.classList.remove('off');await sleep(210);if(!live())return}
-  cueF=f;
-  const to=cueRest(a,f),S=(o,dx)=>({left:(o.sl+(dx||0))+'px',width:o.sw+'px',top:o.y+'px'});
-  await cueAnim(cueEl,[S(r0),S(r0,-12*f)],190,'ease-out');if(!live())return;      /* la queue recule */
-  await cueAnim(cueEl,[S(r0,-12*f),S(r0)],90,'ease-in');if(!live())return;       /* coup */
-  const dist=to.bl-r0.bl,deg=dist/(Math.PI*CD)*360;
-  await Promise.all([
-   cueAnim(ballEl,[{left:r0.bl+'px',top:(r0.y-2)+'px'},{left:to.bl+'px',top:(to.y-2)+'px'}],640,'cubic-bezier(.1,.8,.2,1)'),
-   cueAnim(ballIn,[{transform:'rotate(0deg)'},{transform:`rotate(${deg}deg)`}],640,'cubic-bezier(.1,.8,.2,1)'),
-   cueAnim(cueEl,[S(r0),S(to)],820,'cubic-bezier(.25,.6,.3,1)')]);
-  if(!live())return;
-  cueApply(to,f);cueAnims.forEach(x=>x.cancel());cueAnims=[];
- }catch(e){}
-}
-addEventListener('resize',()=>{if(cueTab)moveCue(cueTab)});
-if(document.fonts)document.fonts.ready.then(()=>{if(cueTab)moveCue(cueTab)});
-const TABS=['presentation','bureau','tournois','evenements','classement','organisateur'];
-function show(){
- const [h,q]=location.hash.slice(1).split('?'),t=TABS.includes(h)?h:'presentation';
- if(q){const pr=new URLSearchParams(q),id=pr.get('defi'),k=pr.get('k');if(/^[a-f0-9]{12}$/.test(id||'')&&/^[a-f0-9]{24}$/.test(k||''))DP={id,k}}
- else if(DP){DP=null;$('defi').hidden=true}
- TABS.forEach(n=>{$('p-'+n).hidden=n!==t;const a=$('t-'+n);if(a)n===t?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
- moveCue($('t-'+t));
- if(t==='tournois'){const f=$('ftour'),src='tournois.html?embed=1'+(new URLSearchParams(q||'').get('vue')==='orga'?'&vue=orga':'');if(f.getAttribute('src')!==src)f.src=src}
- if(DP)defiCheck();
- if(t==='organisateur'){const ok=ss('pn_orga')==='1';$('login').hidden=ok;$('orga').hidden=!ok;if(ok)renderOrga()}
-}
-addEventListener('hashchange',show);
-addEventListener('message',e=>{const f=$('ftour');if(f&&e.source===f.contentWindow&&e.data&&typeof e.data.pnH==='number')f.style.height=Math.max(300,e.data.pnH)+'px'});
-addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
-renderEvents();renderBoard();show();loadDefis();
-(async()=>{
- let j=null;
- try{const r=await fetch(API+'/api/donnees?'+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json()}catch(e){}
- if(!j||!Array.isArray(j.events)){try{const r=await fetch(DATA_PATH+'?'+Date.now());if(r.ok)j=await r.json()}catch(e){}}   /* repli : data.json du dépôt */
- if(j&&Array.isArray(j.events)&&!dirty){D={events:j.events,results:j.results||[]};renderEvents();renderBoard();if(location.hash==='#organisateur'&&ss('pn_orga')==='1')renderOrga()}
-})();
-const v=document.querySelector('video');
-if(v&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.pause();v.removeAttribute('autoplay')}
-</script>
-</body>
+    <footer>
+      <img src="assets/logo.jpg" alt="" />
+      <p>
+        PoolNight · Club de billard · EPITA et EPITECH<br />
+        <a data-insta target="_blank" rel="noopener noreferrer"
+          >Instagram @clubpoolnight</a
+        >
+        · <a href="#organisateur">Espace organisateur</a>
+      </p>
+    </footer>
+  </body>
 </html>

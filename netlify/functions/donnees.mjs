@@ -3,23 +3,15 @@
    PUT  /api/donnees            -> publier (clé organisateur)
    GET  /api/affiche/ev-<n>.jpg -> affiche
    PUT  /api/affiche/ev-<n>.jpg -> téléverser une affiche JPEG (clé organisateur) */
-import { timingSafeEqual } from "node:crypto";
-import { blocked, fail, ipOf } from "../lib/ratelimit.mjs";
-
-const same = (a, b) => {
-  const x = Buffer.from(a || ""), y = Buffer.from(b || "");
-  return x.length === y.length && timingSafeEqual(x, y);
-};
+import { hasOrganizerSession, sameOrigin } from "../lib/organizer-session.mjs";
 const J = { "Content-Type": "application/json", "Cache-Control": "no-store" };
 const txt = (m, s) => new Response(m, { status: s, headers: { "Cache-Control": "no-store" } });
 
-export async function handle(req, store, orgKey, ip = "") {
+export async function handle(req, store, authorize) {
   const url = new URL(req.url), p = url.pathname;
   const auth = async () => {
-    if (await blocked(store, ip)) return txt("too many attempts", 429);
-    if (orgKey && same(req.headers.get("x-organizer-key"), orgKey)) return null;
-    await fail(store, ip);
-    return txt("forbidden", 403);
+    if (!sameOrigin(req)) return txt("forbidden", 403);
+    return await authorize(req) ? null : txt("unauthorized", 401);
   };
 
   if (p === "/api/donnees") {
@@ -59,9 +51,10 @@ export async function handle(req, store, orgKey, ip = "") {
   return txt("not found", 404);
 }
 
-export default async (req, context) => {
+export default async (req) => {
   const { getStore } = await import("@netlify/blobs");
-  return handle(req, getStore({ name: "site", consistency: "strong" }), Netlify.env.get("ORGANIZER_KEY"), ipOf(req, context));
+  const store = getStore({ name: "site", consistency: "strong" });
+  return handle(req, store, request => hasOrganizerSession(request, Netlify.env.get("ORGANIZER_KEY")));
 };
 
 export const config = { path: ["/api/donnees", "/api/affiche/*"] };
